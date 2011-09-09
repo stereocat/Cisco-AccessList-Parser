@@ -1,0 +1,132 @@
+acl :
+  - data : 'access-list'
+    valid : 1
+stdacl_num :
+  - data : "1"
+    valid : 1
+    msg : "area1 lower-bound"
+extacl_num :
+  - data : "100"
+    valid : 1
+    msg : "area1 lower-bound"
+dynamic_spec :
+  - data : ''
+    valid : 1
+  - data : 'dynamic dynamicname'
+    valid : 1
+  - data : 'dynamic dynamicname timeout 3'
+    valid : 1        
+  - data : 'dynamic dynamicname timeout'
+    valid : 0
+    msg : "missing timeout <min>"
+  - data : 'dnamic dynamicname'
+    valid : 0
+    msg : "typo <dynamic>"
+action :
+  - data : 'permit'
+    valid : 1
+  - data : 'deny'
+    valid : 1
+tcp_proto :
+  - data : 'tcp'
+    valid : 1
+udp_proto :
+  - data : 'udp'
+    valid : 1
+ip_spec1 :
+  - data : 'any'
+    valid : 1
+  - data : 'host 192.168.0.1'
+    valid : 1
+  - data : '192.168.0.0 0.0.0.128'
+    valid : 1
+  - data : '192.168.0.2'
+    valid : 0
+    msg : 'missing <host>'
+  - data : '1921.68.0.2'
+    valid : 0
+    msg : 'ip: out of range'
+ip_spec2 :
+  - data : 'any'
+    valid : 1
+  - data : 'host 10.1.0.1'
+    valid : 1
+  - data : '10.1.0.0 0.0.128.255'
+    valid : 1
+  - data : '10.1.0.2'
+    valid : 0
+    msg : 'missing <host>'
+  - data : '10.1.0.256'
+    valid : 0
+    msg : 'ip: out of range'
+tcp_port_spec1 :
+  - data : ""
+    valid : 1
+  - data : "eq 80"
+    valid : 1
+  - data : "eq any"
+    valid : 0
+    msg : "unknown port-prot-name"
+  - data : "lt ftp"
+    valid : 1
+  - data : "gt telnet"
+    valid : 1
+  - data : "range 53 443"
+    valid : 1
+tcp_port_spec2 :
+  - data : ""
+    valid : 1
+  - data : "eq www"
+    valid : 1
+  - data : "lt domain"
+    valid : 1
+  - data : "gt 4000"
+    valid : 1
+  - data : "range 2000 3333"
+    valid : 1
+  - data : "eq isakmp"
+    valid : 0
+    msg : "udp port-proto-name"
+udp_port_spec1 :
+  - data : ""
+    valid : 1
+  - data : "eq 80"
+    valid : 1
+  - data : "eq any"
+    valid : 0
+    msg : "unknown port-prot-name"
+  - data : "lt isakmp"
+    valid : 1
+  - data : "gt ntp"
+    valid : 1
+  - data : "range 53 443"
+    valid : 1
+udp_port_spec2 :
+  - data : ""
+    valid : 1
+  - data : "eq 500"
+    valid : 1
+  - data : "lt domain"
+    valid : 1
+  - data : "gt 4000"
+    valid : 1
+  - data : "range 2000 3333"
+    valid : 1
+  - data : "eq pop3"
+    valid : 0
+    msg : "tcp port-proto-name"
+ext_acl_log_spec :
+  - data : ""
+    valid : 1
+  - data : "log"
+    valid : 1
+  - data : "log logcookie"
+    valid : 1
+  - data : "log-input"
+    valid : 1
+  - data : "log-input logcookie"
+    valid : 1
+  - data : "65536"
+    valid : 0
+    msg : "port out of range"
+    todo : "port check: not implemented yet"

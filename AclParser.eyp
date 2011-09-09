@@ -1,0 +1,845 @@
+# -*- yapp -*-
+
+###
+# grammar head section
+##
+
+%{
+use lib qw(.);
+use strict;
+use warnings;
+use Regexp::Common qw/number net/;
+use Data::Dumper;
+
+my $acl_table = [];
+%}
+
+%start expr
+
+%tree
+
+%%
+
+###
+# grammer body section
+###
+
+expr: acl
+        | acl expr
+        ;
+
+acl : numbered_acl
+        | named_acl
+        ;
+
+# standard access-list
+
+numbered_acl : STDACL std_acl
+                {
+                    push @{$acl_table}, $_[1];
+                }
+        | EXTACL ext_acl
+                {
+                    push @{$acl_table}, $_[1];
+                }
+        ;
+
+std_acl : action ip_spec std_acl_log_spec
+        | REMARK
+        ;
+
+std_acl_log_spec :
+        | LOG log_cookie
+        ;
+
+# extended access-list
+
+ext_acl : dynamic_spec ext_acl_body other_qualifier_list
+        | REMARK
+        ;
+
+ext_acl_body : action ip_proto ip_spec ip_spec
+        | action icmp_proto ip_spec ip_spec icmp_qualifier
+        | action tcp_proto tcp_src_spec tcp_dst_spec tcp_flags_list
+        | action udp_proto udp_src_spec udp_dst_spec
+        ;
+
+# protocols
+
+ip_proto : AHP          # 51
+        | EIGRP         # 88
+        | ESP           # 50
+        | GRE           # 47
+        | IGMP          # 2
+        | IGRP
+        | IP            # IS NOT 0! (no number)
+        | IPINIP        # 94
+        | NOS
+        | OSPF          # 89
+        | PCP           # 108
+        | PIM           # 103
+        | NUMBER        # ip protocol number (0-255)
+        ;
+
+icmp_proto : ICMP       # 1
+        ;
+
+tcp_proto : TCP         # 6
+        ;
+
+udp_proto : UDP         # 17
+        ;
+
+tcp_src_spec: ip_spec tcp_port_spec
+        ;
+tcp_dst_spec: ip_spec tcp_port_spec
+        ;
+udp_src_spec: ip_spec udp_port_spec
+        ;
+udp_dst_spec: ip_spec udp_port_spec
+        ;
+
+# ip named access-list
+
+named_acl : std_named_acl_header std_named_acl_entry_list
+        | ext_named_acl_header ext_named_acl_entry_list
+        ;
+
+std_named_acl_header : IPACL STANDARD STRING
+                {
+                    push @$acl_table, $_[3];
+                }
+        ;
+
+std_named_acl_entry_list :
+        | std_named_acl_entry std_named_acl_entry_list
+        ;
+
+std_named_acl_entry: seq_number std_acl
+        | seq_number EVALUATE
+        ;
+
+ext_named_acl_header : IPACL EXTENDED STRING
+                {
+                    push @$acl_table, $_[3];
+                }
+        ;
+
+ext_named_acl_entry_list :
+        | ext_named_acl_entry ext_named_acl_entry_list
+        ;
+
+ext_named_acl_entry: seq_number ext_acl
+        | seq_number EVALUATE STRING
+        ;
+
+seq_number :
+        | NUMBER # (1-2147483647)
+        ;
+
+# access-list common components
+
+action : PERMIT
+        | DENY
+        ;
+
+ip_spec : HOST IPV4_ADDR
+        | IPV4_ADDR IPV4_ADDR # ipaddr wildcard
+        | ANY
+        ;
+
+dynamic_spec :
+        | DYNAMIC STRING timeout_spec
+        ;
+
+timeout_spec :
+        | TIMEOUT NUMBER
+        ;
+
+
+# icmp qualifier
+
+icmp_qualifier :
+        | ADM_PROHIB
+        | ALT_ADDR
+        | CONV_ERR 
+        | DOD_HOST_PROHIB  
+        | DOD_NET_PROHIB  
+        | ECHO 
+        | ECHO_REPLY 
+        | GEN_PARAM_PROB 
+        | HOST_ISOL 
+        | MOB_REDIR 
+        | NET_REDIR 
+        | NET_TOS_REDIR
+        | NET_UNREACH 
+        | NET_UNKN 
+        | NO_ROOM_OPT 
+        | OPT_MISSING 
+        | PKT_TOO_BIG 
+        | PARAM_PROB 
+        | PORT_UNREACH 
+        | PREC_UNREACH 
+        | PROT_UNREACH 
+        | HOST_PREC_UNREACH 
+        | HOST_REDIR 
+        | HOST_TOS_REDIR 
+        | HOST_UNKN 
+        | HOST_UNREACH 
+        | INFO_REPLY 
+        | INFO_REQ 
+        | MASK_REPLY
+        | MASK_REQ 
+        | REASS_TIMEOUT 
+        | REDIR 
+        | ROUTER_ADV 
+        | ROUTER_SOL 
+        | SRC_QUENCH 
+        | SRC_ROUTE_FAIL 
+        | TIME_EXC 
+        | TIME_REPLY 
+        | TIME_REQ 
+        | TRACERT 
+        | TTL_EXC 
+        | UNREACH
+        | icmp_numtype icmp_numcode
+        ;
+
+icmp_numtype : NUMBER # icmp message type (0-255)
+        ;
+
+icmp_numcode :
+        | NUMBER # icmp message code (0-255)
+        ;
+
+
+# tcp/udp port spec
+
+tcp_port_spec :
+        | unary_operator tcp_port_qualifier
+        | RANGE tcp_port_qualifier tcp_port_qualifier
+        ;
+
+udp_port_spec :
+        | unary_operator udp_port_qualifier
+        | RANGE udp_port_qualifier udp_port_qualifier
+        ;
+
+unary_operator : GT
+        | EQ
+        | NEQ
+        | LT
+        ;
+
+tcp_port_qualifier : BGP
+        | CHARGEN 
+        | CMD 
+        | DAYTIME 
+        | DISCARD 
+        | DOMAIN 
+        | ECHO 
+        | EXEC 
+        | FINGER 
+        | FTP
+        | FTP_DATA 
+        | GOPHER 
+        | HOSTNAME 
+        | IDENT 
+        | IRC 
+        | KLOGIN 
+        | KSHELL 
+        | LOGIN 
+        | LPD
+        | NNTP 
+        | PIM_AUTO_RP 
+        | POP2 
+        | POP3 
+        | SMTP 
+        | SUNRPC 
+        | SYSLOG 
+        | TACACS 
+        | TALK 
+        | TELNET
+        | TIME 
+        | UUCP 
+        | WHOIS 
+        | WWW
+        | NUMBER        # port number (0-65535)
+        ;
+
+udp_port_qualifier : BIFF 
+        | BOOTPC 
+        | BOOTPS 
+        | DISCARD 
+        | DNSIX 
+        | DOMAIN 
+        | ECHO 
+        | ISAKMP 
+        | MOBILE_IP
+        | NAMESERVER 
+        | NETBIOS_DGM  
+        | NETBIOS_NS
+        | NETBIOS_SS
+        | NON500_ISAKMP
+        | NTP 
+        | PIM_AUTO_RP 
+        | RIP 
+        | SNMP
+        | SNMPTRAP 
+        | SUNRPC 
+        | SYSLOG 
+        | TACACS 
+        | TALK 
+        | TFTP 
+        | TIME 
+        | WHO 
+        | XDMCP
+        | NUMBER        # port number (0-65535)
+        ;
+
+
+# tcp flags list
+
+tcp_flags_list:
+        | tcp_flags_list tcp_flag
+        ;
+
+tcp_flag : ack_flag
+        | SYN
+        | FIN
+        | PSH
+        | URG
+        | RST
+        ;
+
+ack_flag : ESTABL
+        | ACK
+        ;
+
+
+# oether qualifier list
+
+other_qualifier_list :
+        |  other_qualifier other_qualifier_list
+        ;
+
+other_qualifier: dscp_rule
+        | FRAGMENTS
+        | logging
+        | tos_qualifier
+        | precedence_qualifier
+        | time_range_spec
+        | recursive_qualifier
+        | ttl_qualifier      # IOS 12.4
+        | option_qualifier   # IOS 12.3(4)T,12.2(25)S, IP Options
+        ;
+
+dscp_rule : DSCP dscp_spec
+        ;
+
+dscp_spec : NUMBER
+        | AF11
+        | AF12
+        | AF13
+        | AF21
+        | AF22
+        | AF23
+        | AF31
+        | AF32
+        | AF33
+        | AF41
+        | AF42
+        | AF43
+        | CS1
+        | CS2
+        | CS3
+        | CS4
+        | CS5
+        | CS6
+        | CS7
+        | DEFAULT
+        | EF
+        ;
+
+logging: LOG_INPUT log_cookie
+        | LOG log_cookie
+        ;
+
+log_cookie :
+        | STRING
+        ;
+
+tos_qualifier: TOS tos_string
+        | TOS NUMBER
+        ;
+
+tos_string: TOS_MAX_REL
+        | TOS_MAX_THRPUT
+        | TOS_MIN_DELAY
+        | TOS_MIN_MONET_COST
+        | TOS_NORMAL
+        ;
+
+precedence_qualifier: PRECEDENCE precedence_string
+        | PRECEDENCE NUMBER
+        ;
+
+precedence_string: PREC_CRITICAL
+        | PREC_FLASH
+        | PREC_FLASH_OVERR
+        | PREC_IMMED
+        | PREC_INET
+        | PREC_NET
+        | PREC_PRIO
+        | PREC_ROUTINE
+        ;
+
+time_range_spec: TIME_RANGE STRING
+        ;
+
+recursive_qualifier : REFLECT STRING recursive_timeout
+        ;
+
+recursive_timeout :
+        | NUBMER
+        ;
+
+ttl_qualifier : TTL unary_operator NUMBER
+        | TTL RANGE NUMBER NUMBER
+        ;
+
+option_qualifier : OPTION option_spec
+        ;
+
+option_spec : ADD_EXT   # opt 147
+        | ANY_OPTS
+        | COM_SECURITY  # opt 134
+        | DPS           # opt 151
+        | ENCODE        # opt 15
+        | EOOL          # opt 0
+        | EXT_IP        # opt 145
+        | EXT_SECURITY  # opt 133
+        | FINN          # opt 205
+        | IMITD         # opt 144
+        | LSR           # opt 131
+        | MTUP          # opt 11
+        | MTUR          # opt 12
+        | NO_OP         # opt 1 
+        | NSAPA         # opt 150
+        | RECORD_ROUTE  # opt 7
+        | ROUTER_ALERT  # opt 148
+        | SDB           # opt 149
+        | SECURITY      # opt 130
+        | SSR           # opt 137
+        | STREAM_ID     # opt 136
+        | TIMESTAMP     # opt 68
+        | TRACEROUTE    # opt 82
+        | UMP           # opt 152
+        | VISA          # opt 142
+        | ZSU           # opt 10
+        | NUMBER        # ip options vlaue (0-255)
+        ;
+%%
+
+###
+# grammar tail section
+###
+
+## Lexer
+sub yylex {
+    my ($p) = shift;
+
+    for ( $p->YYData->{INPUT} ) {
+        # print "# $_ pos=", pos(), "\n";
+
+        # whitespace and comment
+        m/\G[\s\r\n\x0A\x0D]*/gc;
+        # m{\G[ \t]*(\#\!.*)?}gc;
+
+        # reserved
+        m/\G(\/)/gc   and return ( 'SLASH', $1 );
+        m/\G(ipv6)/gc and return ( 'IPV6',  $1 );
+
+        if (/\Gaccess-list\s+(\d+)/gc) {
+            my $aclnum = $1;
+
+            if (   ( 1 <= $aclnum && $aclnum <= 99 )
+                || ( 1300 <= $aclnum && $aclnum <= 1999 ) )
+            {
+                return ( 'STDACL', $aclnum );
+            }
+            elsif (( 100 <= $aclnum && $aclnum <= 199 )
+                || ( 2000 <= $aclnum && $aclnum <= 2699 ) )
+            {
+                return ( 'EXTACL', $aclnum );
+            }
+        }
+
+        # named acl
+        m/\G(ip\s+access-list)\s+/gc and return ( 'IPACL',    $1 );
+        m/\G(extended)\s+/gc         and return ( 'EXTENDED', $1 );
+        m/\G(standard)\s+/gc         and return ( 'STANDARD', $1 );
+
+        # action
+        m/\G(permit)\s+/gc and return ( 'PERMIT', $1 );
+        m/\G(deny)\s+/gc   and return ( 'DENY',   $1 );
+
+        # remark 'remark ntp' みたいな状況で REMARK NTP という token が
+        # かえってしまったので lexer 側で回避する。remark のあとの文字
+        # 列は任意で行末まで読み捨てないといけない(remark ip acl hoge
+        # とかだって書けるのでそのままだと処理できない)。ただ
+        # /\Gremark\s+(.*)$/ にしてたら $ がマッチしなくて行末がSTRING
+        # にひっかかる。改行まで含めないと /''/が STRING としてひっかかっ
+        # てくるので注意。
+
+        if (/\G(?:remark)\s*(.*)/gc) {
+            return ( 'REMARK', $1 );
+        }
+
+        # m/\G(remark)\s+/gc and return ( 'REMARK', $1 );
+        
+        # dynamic_spec
+        m/\G(dynamic)\s+/gc and return ( 'DYNAMIC', $1 );
+        m/\G(timeout)\s+/gc and return ( 'TIMEOUT', $1 );
+
+        # operator
+        m/\G(eq)\s+/gc    and return ( 'EQ',    $1 );
+        m/\G(neq)\s+/gc   and return ( 'NEQ',   $1 );
+        m/\G(gt)\s+/gc    and return ( 'GT',    $1 );
+        m/\G(lt)\s+/gc    and return ( 'LT',    $1 );
+        m/\G(range)\s+/gc and return ( 'RANGE', $1 );
+
+        # ip_spec
+        m/\G(any)\s+/gc  and return ( 'ANY',  $1 );
+        m/\G(host)\s+/gc and return ( 'HOST', $1 );
+
+        # tcp_flag
+        m/\G(established)\s+/gc and return ( 'ESTABL', $1 );
+        m/\G(syn)\s+/gc         and return ( 'SYN',    $1 );
+        m/\G(ack)\s+/gc         and return ( 'ACK',    $1 );
+        m/\G(fin)\s+/gc         and return ( 'FIN',    $1 );
+        m/\G(psh)\s+/gc         and return ( 'PSH',    $1 );
+        m/\G(urg)\s+/gc         and return ( 'URG',    $1 );
+        m/\G(rst)\s+/gc         and return ( 'RST',    $1 );
+
+        # ip protocol number, tcp/udp port number とかはこの時点で
+        # return (TOKEN, [$1, num]); して番号に変換してしまおうと思った
+        # が、'echo' が icmp to udp port num で token 重複していて分離
+        # できない。'echo'だけ特例として reduce action 側で対応するか?
+        
+        # ip_proto (convert to protocol number)
+        m/\G(ahp)\s+/gc   and return ( 'AHP',   [$1, 51] );
+        m/\G(eigrp)\s+/gc and return ( 'EIGRP', [$1, 88] );
+        m/\G(esp)\s+/gc   and return ( 'ESP',   [$1, 51] );
+        m/\G(gre)\s+/gc   and return ( 'GRE',   [$1, 46] );
+        m/\G(icmp)\s+/gc  and return ( 'ICMP',  [$1, 1] );
+        m/\G(igmp)\s+/gc  and return ( 'IGMP',  [$1, 2] );
+        ## NOTICE! MUST ipinip first: for longuest match ipinip->ip
+        m/\G(ipinip)\s+/gc and return ( 'IPINIP', [$1, 94] );
+        m/\G(ip)\s+/gc     and return ( 'IP',     [$1, undef] ); # NOT 0
+        m/\G(nos)\s+/gc    and return ( 'NOS',    [$1, undef] ); # number unknown...
+        m/\G(ospf)\s+/gc   and return ( 'OSPF',   [$1, 89] );
+        m/\G(pcf)\s+/gc    and return ( 'PCP',    [$1, 108] );
+        m/\G(pim)\s+/gc    and return ( 'PIM',    [$1, 103] );
+        m/\G(tcp)\s+/gc    and return ( 'TCP',    [$1, 6] );
+        m/\G(udp)\s+/gc    and return ( 'UDP',    [$1, 17] );
+
+        # other_qualifier
+        m/\G(fragments)\s+/gc and return ( 'FRAGMENTS', $1 );
+
+        # logging
+        m/\G(log-input)\s+/gc  and return ( 'LOG_INPUT',  $1 );
+        m/\G(log-update)\s+/gc and return ( 'LOG_UPDATE', $1 );
+        m/\G(log)\s+/gc        and return ( 'LOG',        $1 );
+        m/\G(threshold)\s+/gc  and return ( 'THRESHOLD',  $1 );    # ipv6 acl?
+
+        # time_range_spec
+        m/\G(time-range)\s+/gc and return ( 'TIME_RANGE', $1 );
+
+         # icmp_qualifier
+        m/\G(administratively-prohibited)\s+/gc
+            and return ( 'ADM_PROHIB', $1 );
+        m/\G(alternate-address)\s+/gc   and return ( 'ALT_ADDR',        $1 );
+        m/\G(conversion-error)\s+/gc    and return ( 'CONV_ERR',        $1 );
+        m/\G(dod-host-prohibited)\s+/gc and return ( 'DOD_HOST_PROHIB', $1 );
+        m/\G(dod-net-prohibited)\s+/gc  and return ( 'DOD_NET_PROHIB',  $1 );
+        ## NOTICE! MUST echo-reply first: for longuest match
+        m/\G(echo-reply)\s+/gc          and return ( 'ECHO_REPLY',      $1 );
+        m/\G(echo)\s+/gc                and return ( 'ECHO',            $1 );
+        m/\G(general-parameter-problem)\s+/gc
+            and return ( 'GEN_PARAM_PROB', $1 );
+        m/\G(host-isolated)\s+/gc          and return ( 'HOST_ISOL',     $1 );
+        m/\G(mobile-redirect)\s+/gc        and return ( 'MOB_REDIR',     $1 );
+        m/\G(net-redirect)\s+/gc           and return ( 'NET_REDIR',     $1 );
+        m/\G(net-tos-redirect)\s+/gc       and return ( 'NET_TOS_REDIR', $1 );
+        m/\G(net-unreachable)\s+/gc        and return ( 'NET_UNREACH',   $1 );
+        m/\G(network-unknown)\s+/gc        and return ( 'NET_UNKN',      $1 );
+        m/\G(no-room-for-option)\s+/gc     and return ( 'NO_ROOM_OPT',   $1 );
+        m/\G(option-missing)\s+/gc         and return ( 'OPT_MISSING',   $1 );
+        m/\G(packet-too-big)\s+/gc         and return ( 'PKT_TOO_BIG',   $1 );
+        m/\G(parameter-problem)\s+/gc      and return ( 'PARAM_PROB',    $1 );
+        m/\G(port-unreachable)\s+/gc       and return ( 'PORT_UNREACH',  $1 );
+        m/\G(precedence-unreachable)\s+/gc and return ( 'PREC_UNREACH',  $1 );
+        m/\G(protocol-unreachable)\s+/gc   and return ( 'PROT_UNREACH',  $1 );
+        m/\G(host-precedence-unreachable)\s+/gc
+            and return ( 'HOST_PREC_UNREACH', $1 );
+        m/\G(host-redirect)\s+/gc        and return ( 'HOST_REDIR',     $1 );
+        m/\G(host-tos-redirect)\s+/gc    and return ( 'HOST_TOS_REDIR', $1 );
+        m/\G(host-unknown)\s+/gc         and return ( 'HOST_UNKN',      $1 );
+        m/\G(host-unreachable)\s+/gc     and return ( 'HOST_UNREACH',   $1 );
+        m/\G(information-reply)\s+/gc    and return ( 'INFO_REPLY',     $1 );
+        m/\G(information-request)\s+/gc  and return ( 'INFO_REQ',       $1 );
+        m/\G(mask-reply)\s+/gc           and return ( 'MASK_REPLY',     $1 );
+        m/\G(mask-request)\s+/gc         and return ( 'MASK_REQ',       $1 );
+        m/\G(reassembly-timeout)\s+/gc   and return ( 'REASS_TIMEOUT',  $1 );
+        m/\G(redirect)\s+/gc             and return ( 'REDIR',          $1 );
+        m/\G(router-advertisement)\s+/gc and return ( 'ROUTER_ADV',     $1 );
+        m/\G(router-solicitation)\s+/gc  and return ( 'ROUTER_SOL',     $1 );
+        m/\G(source-quench)\s+/gc        and return ( 'SRC_QUENCH',     $1 );
+        m/\G(source-route-failed)\s+/gc  and return ( 'SRC_ROUTE_FAIL', $1 );
+        m/\G(time-exceeded)\s+/gc        and return ( 'TIME_EXC',       $1 );
+        m/\G(timestamp-reply)\s+/gc      and return ( 'TIME_REPLY',     $1 );
+        m/\G(timestamp-request)\s+/gc    and return ( 'TIME_REQ',       $1 );
+        m/\G(traceroute)\s+/gc           and return ( 'TRACERT',        $1 );
+        m/\G(ttl-exceeded)\s+/gc         and return ( 'TTL_EXC',        $1 );
+        m/\G(unreachable)\s+/gc          and return ( 'UNREACH',        $1 );
+
+        # ipv6 acl?
+        m/\G(beyond-scope)\s+/gc            and return ( 'BEYOND_SCOPE', $1 );
+        m/\G(destination-unreachable)\s+/gc and return ( 'DEST_UNREACH', $1 );
+        m/\G(echo-request)\s+/gc            and return ( 'ECHO_REQUEST', $1 );
+        m/\G(flow-label)\s+/gc              and return ( 'FLOW_LABEL',   $1 );
+        m/\G(header)\s+/gc                  and return ( 'HEADER',       $1 );
+        m/\G(hop-limit)\s+/gc               and return ( 'HOP_LIMIT',    $1 );
+        m/\G(mld-query)\s+/gc               and return ( 'MLD_QUERY',    $1 );
+        m/\G(mld-reduction)\s+/gc          and return ( 'MLD_REDUCTION', $1 );
+        m/\G(mld-report)\s+/gc             and return ( 'MLD_REPORT',    $1 );
+        m/\G(nd-na)\s+/gc                  and return ( 'ND_NA',         $1 );
+        m/\G(nd-ns)\s+/gc                  and return ( 'ND_NS',         $1 );
+        m/\G(next-header)\s+/gc            and return ( 'NEXT_HEADER',   $1 );
+        m/\G(no-admin)\s+/gc               and return ( 'NO_ADMIN',      $1 );
+        m/\G(no-route)\s+/gc               and return ( 'NO_ROUTE',      $1 );
+        m/\G(parameter-option)\s+/gc       and return ( 'PARAM_OPTION',  $1 );
+        m/\G(renum-command)\s+/gc          and return ( 'RENUM_CMD',     $1 );
+        m/\G(renum-result)\s+/gc           and return ( 'RENUM_RES',     $1 );
+        m/\G(renum-seq-number)\s+/gc       and return ( 'RENUM_SEQ_NR',  $1 );
+        m/\G(router-renumbering)\s+/gc     and return ( 'ROUTER_RENUM',  $1 );
+        m/\G(routing)\s+/gc                and return ( 'ROUTING',       $1 );
+        m/\G(undetermined-transport)\s+/gc and return ( 'UNDET_TRAN',    $1 );
+        m/\G(sequence)\s+/gc               and return ( 'SEQUENCE',      $1 );
+
+        # precedence_qualifier
+        m/\G(precedence)\s+/gc     and return ( 'PRECEDENCE',       $1 );
+        m/\G(critical)\s+/gc       and return ( 'PREC_CRITICAL',    $1 );
+        m/\G(flash)\s+/gc          and return ( 'PREC_FLASH',       $1 );
+        m/\G(flash-override)\s+/gc and return ( 'PREC_FLASH_OVERR', $1 );
+        m/\G(immediate)\s+/gc      and return ( 'PREC_IMMED',       $1 );
+        m/\G(internet)\s+/gc       and return ( 'PREC_INET',        $1 );
+        m/\G(network)\s+/gc        and return ( 'PREC_NET',         $1 );
+        m/\G(priority)\s+/gc       and return ( 'PREC_PRIO',        $1 );
+        m/\G(routine)\s+/gc        and return ( 'PREC_ROUTINE',     $1 );
+
+        # tos_qualifier
+        m/\G(tos)\s+/gc               and return ( 'TOS',                $1 );
+        m/\G(max-reliability)\s+/gc   and return ( 'TOS_MAX_REL',        $1 );
+        m/\G(max-throughput)\s+/gc    and return ( 'TOS_MAX_THRPUT',     $1 );
+        m/\G(min-delay)\s+/gc         and return ( 'TOS_MIN_DELAY',      $1 );
+        m/\G(min-monetary-cost)\s+/gc and return ( 'TOS_MIN_MONET_COST', $1 );
+        m/\G(normal)\s+/gc            and return ( 'TOS_NORMAL',         $1 );
+
+        # recursive_qualifier
+        m/\G(reflect)\s+/gc  and return ( 'REFLECT',  $1 );
+        m/\G(evaluate)\s+/gc and return ( 'EVALUATE', $1 );
+
+        # tcp_port_qualifier
+        m/\G(bgp)\s+/gc     and return ( 'BGP',     [ $1, 179 ] );
+        m/\G(chargen)\s+/gc and return ( 'CHARGEN', [ $1, 19 ] );
+        m/\G(cmd)\s+/gc     and return ( 'CMD',     [ $1, 514 ] );
+        m/\G(daytime)\s+/gc and return ( 'DAYTIME', [ $1, 13 ] );
+        m/\G(discard)\s+/gc and return ( 'DISCARD', [ $1, 9 ] );
+        m/\G(domain)\s+/gc  and return ( 'DOMAIN',  [ $1, 53 ] );
+        ## overwrap token: icmp echo...
+        m/\G(echo)\s+/gc   and return ( 'ECHO',   [ $1, 7 ] );
+        m/\G(exec)\s+/gc   and return ( 'EXEC',   [ $1, 512 ] );
+        m/\G(finger)\s+/gc and return ( 'FINGER', [ $1, 79 ] );
+        ## NOTICE! MUST ftp-data first: for longuest match
+        m/\G(ftp-data)\s+/gc    and return ( 'FTP_DATA',    [ $1, 20 ] );
+        m/\G(ftp)\s+/gc         and return ( 'FTP',         [ $1, 21 ] );
+        m/\G(gopher)\s+/gc      and return ( 'GOPHER',      [ $1, 70 ] );
+        m/\G(hostname)\s+/gc    and return ( 'HOSTNAME',    [ $1, 101 ] );
+        m/\G(ident)\s+/gc       and return ( 'IDENT',       [ $1, 113 ] );
+        m/\G(irc)\s+/gc         and return ( 'IRC',         [ $1, 194 ] );
+        m/\G(klogin)\s+/gc      and return ( 'KSHELL',      [ $1, 543 ] );
+        m/\G(login)\s+/gc       and return ( 'LOGIN',       [ $1, 513 ] );
+        m/\G(lpd)\s+/gc         and return ( 'LPD',         [ $1, 515 ] );
+        m/\G(nntp)\s+/gc        and return ( 'NNTP',        [ $1, 119 ] );
+        m/\G(pim-auto-rp)\s+/gc and return ( 'PIM_AUTO_RP', [ $1, 496 ] );
+        m/\G(pop2)\s+/gc        and return ( 'POP2',        [ $1, 109 ] );
+        m/\G(pop3)\s+/gc        and return ( 'POP3',        [ $1, 110 ] );
+        m/\G(smtp)\s+/gc        and return ( 'SMTP',        [ $1, 25 ] );
+        m/\G(sunrpc)\s+/gc      and return ( 'SUNRPC',      [ $1, 111 ] );
+        m/\G(tacacs)\s+/gc      and return ( 'TACACS',      [ $1, 49 ] );
+        m/\G(talk)\s+/gc        and return ( 'TALK',        [ $1, 517 ] );
+        m/\G(telnet)\s+/gc      and return ( 'TELNET',      [ $1, 23 ] );
+        m/\G(time)\s+/gc        and return ( 'TIME',        [ $1, 37 ] );
+        m/\G(uucp)\s+/gc        and return ( 'UUCP',        [ $1, 540 ] );
+        m/\G(whois)\s+/gc       and return ( 'WHOIS',       [ $1, 43 ] );
+        m/\G(www)\s+/gc         and return ( 'WWW',         [ $1, 80 ] );
+
+        # udp_port_qualifier
+        m/\G(biff)\s+/gc   and return ( 'BIFF',   [ $1, 512 ] );
+        m/\G(bootpc)\s+/gc and return ( 'BOOTPC', [ $1, 68 ] );
+        m/\G(bootps)\s+/gc and return ( 'BOOTPS', [ $1, 67 ] );
+        ## discard defined at tcp_port_qualifier
+        m/\G(dnsix)\s+/gc and return ( 'DNSIX', [ $1, 195 ] );
+        ## echo defined at tcp_port_qualifier
+        m/\G(isakmp)\s+/gc        and return ( 'ISAKMP',        [ $1, 500 ] );
+        m/\G(mobile-ip)\s+/gc     and return ( 'MOBILE_IP',     [ $1, 434 ] );
+        m/\G(nameserver)\s+/gc    and return ( 'NAMESERVER',    [ $1, 42 ] );
+        m/\G(netbios-dgm)\s+/gc   and return ( 'NETBIOS_DGM',   [ $1, 138 ] );
+        m/\G(netbios-ns)\s+/gc    and return ( 'NETBIOS_NS',    [ $1, 137 ] );
+        m/\G(netbios-ss)\s+/gc    and return ( 'NETBIOS_SS',    [ $1, 139 ] );
+        m/\G(non500-isakmp)\s+/gc and return ( 'NON500_ISAKMP', [ $1, 4500 ] );
+        m/\G(ntp)\s+/gc           and return ( 'NTP',           [ $1, 123 ] );
+        m/\G(pim-auto-rp)\s+/gc   and return ( 'PIM_AUTO_RP',   [ $1, 496 ] );
+        m/\G(rip)\s+/gc           and return ( 'RIP',           [ $1, 520 ] );
+        ## NOTICE! MUST snmptrap first: for longuest match
+        m/\G(snmptrap)\s+/gc and return ( 'SNMPTRAP', [ $1, 162 ] );
+        m/\G(snmp)\s+/gc     and return ( 'SNMP',     [ $1, 161 ] );
+        ## sunrpc defined at tcp_port_qualifier
+        m/\G(syslog)\s+/gc and return ( 'SYSLOG', [ $1, 514 ] );
+        ## talk defined at tcp_port_qualifier
+        m/\G(tftp)\s+/gc and return ( 'TFTP', [ $1, 69 ] );
+        ## time defined at tcp_port_qualifier
+        m/\G(who)\s+/gc   and return ( 'WHO',   [ $1, 513 ] );
+        m/\G(xdmcp)\s+/gc and return ( 'XDMCP', [ $1, 177 ] );
+
+        # dscp_rule
+        m/\G(dscp)\s+/gc    and return ( 'DSCP',    $1 );
+        m/\G(af11)\s+/gc    and return ( 'AF11',    $1 );
+        m/\G(af12)\s+/gc    and return ( 'AF12',    $1 );
+        m/\G(af13)\s+/gc    and return ( 'AF13',    $1 );
+        m/\G(af21)\s+/gc    and return ( 'AF21',    $1 );
+        m/\G(af22)\s+/gc    and return ( 'AF22',    $1 );
+        m/\G(af23)\s+/gc    and return ( 'AF23',    $1 );
+        m/\G(af31)\s+/gc    and return ( 'AF31',    $1 );
+        m/\G(af32)\s+/gc    and return ( 'AF32',    $1 );
+        m/\G(af33)\s+/gc    and return ( 'AF33',    $1 );
+        m/\G(af41)\s+/gc    and return ( 'AF41',    $1 );
+        m/\G(af42)\s+/gc    and return ( 'AF42',    $1 );
+        m/\G(af43)\s+/gc    and return ( 'AF43',    $1 );
+        m/\G(cs1)\s+/gc     and return ( 'CS1',     $1 );
+        m/\G(cs2)\s+/gc     and return ( 'CS2',     $1 );
+        m/\G(cs3)\s+/gc     and return ( 'CS3',     $1 );
+        m/\G(cs4)\s+/gc     and return ( 'CS4',     $1 );
+        m/\G(cs5)\s+/gc     and return ( 'CS5',     $1 );
+        m/\G(cs6)\s+/gc     and return ( 'CS6',     $1 );
+        m/\G(cs7)\s+/gc     and return ( 'CS7',     $1 );
+        m/\G(default)\s+/gc and return ( 'DEFAULT', $1 );
+        m/\G(ef)\s+/gc      and return ( 'EF',      $1 );
+
+        # option_qualifier
+        m/\G(option)\s+/gc       and return ( 'OPTION',       $1 );
+        m/\G(add-ext)\s+/gc      and return ( 'ADD_EXT',      $1 );
+        m/\G(any-options)\s+/gc  and return ( 'ANY_OPTS',     $1 );
+        m/\G(com-security)\s+/gc and return ( 'COM_SECURITY', $1 );
+        m/\G(dps)\s+/gc          and return ( 'DPS',          $1 );
+        m/\G(encode)\s+/gc       and return ( 'ENCODE',       $1 );
+        m/\G(eool)\s+/gc         and return ( 'EOOL',         $1 );
+        m/\G(ext-ip)\s+/gc       and return ( 'EXT_IP',       $1 );
+        m/\G(ext-security)\s+/gc and return ( 'EXT_SECURITY', $1 );
+        m/\G(finn)\s+/gc         and return ( 'FINN',         $1 );
+        m/\G(imitd)\s+/gc        and return ( 'IMITD',        $1 );
+        m/\G(lsr)\s+/gc          and return ( 'LSR',          $1 );
+        m/\G(mtup)\s+/gc         and return ( 'MTUP',         $1 );
+        m/\G(mtur)\s+/gc         and return ( 'MTUD',         $1 );
+        m/\G(no-op)\s+/gc        and return ( 'NO_OP',        $1 );
+        m/\G(nsapa)\s+/gc        and return ( 'NSAPA',        $1 );
+        m/\G(record-route)\s+/gc and return ( 'RECORD_ROUTE', $1 );
+        m/\G(route-alert)\s+/gc  and return ( 'ROUTER_ALERT', $1 );
+        m/\G(sdb)\s+/gc          and return ( 'SDB',          $1 );
+        m/\G(security)\s+/gc     and return ( 'SECURITY',     $1 );
+        m/\G(ssr)\s+/gc          and return ( 'SSR',          $1 );
+        m/\G(stream-id)\s+/gc    and return ( 'STREAM_ID',    $1 );
+        m/\G(timestamp)\s+/gc    and return ( 'TIMESTAMP',    $1 );
+        m/\G(traceroute)\s+/gc   and return ( 'TRACEROUTE',   $1 );
+        m/\G(ump)\s+/gc          and return ( 'UMP',          $1 );
+        m/\G(visa)\s+/gc         and return ( 'VISA',         $1 );
+        m/\G(zsu)\s+/gc          and return ( 'ZSU',          $1 );
+
+        m/\G($RE{net}{IPv4}{dec})\s+/gc and return ( 'IPV4_ADDR', $1 );
+
+        m/\G($RE{num}{int}{-keep})\s+/gc and return ( 'NUMBER', $1 );
+
+        # empty
+        # m/\G(\s*$)\s+/gc and return ( '', undef );
+            
+        # string
+        if ( /\G([A-Za-z()0-9,\'_=\-]+)/gc ) {
+            # print "##### STRING: /$1/, ", pos(), "\n";
+            return ( 'STRING', $1 );
+        }
+    }
+    return ( '', undef );
+}
+
+## Error Handler
+sub yyerror {
+    die "Syntax error near "
+        . ( $_[0]->YYCurval ? $_[0]->YYCurval : "end of file" ) . "\n";
+}
+
+## 
+sub is_acl_accepted {
+    my $self  = shift;
+    my $debug = shift;
+
+    $acl_table = [];
+    eval {
+        $self->YYParse(
+            yylex   => \&yylex,
+            yyerror => \&yyerror,
+            yydebug => ( defined($debug) ? 0x1F : 0 ),
+        );
+    };
+
+    print Dumper $acl_table if defined($debug);
+
+    if ($@) {
+        # delete last acl
+        return 0;
+    }
+    else {
+        return 1;
+    }
+
+#    return @$acl_table;
+}
+
+## setter
+sub set_yydata_input {
+    my $self  = shift;
+    my $input = shift;
+    $input = $input . "\r";
+    $self->YYData->{INPUT} = $input;
+}
+
+## lexer Checker
+sub lex_check {
+    my $self = shift;
+
+    my ( $token, $val );
+    do {
+        ( $token, $val ) = $self->yylex();
+        if ( defined($val) ) {
+            if ( ref($val) eq 'ARRAY' ) {
+                print( ":: $token, [",
+                    defined( $val->[0] ) ? $val->[0] : "undef",
+                    ",", $val->[1]       ? $val->[1] : "undef", "]\n" );
+            }
+            else {
+                print "// $token, /$val/\n";
+            }
+        }
+    } while ( defined($token) && defined($val) );
+}

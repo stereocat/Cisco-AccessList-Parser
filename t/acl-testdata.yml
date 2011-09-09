@@ -1,0 +1,160 @@
+acl :
+  - data : 'access-list'
+    valid : 1
+  - data : 'access-lsit'
+    valid : 0
+    msg : "typo <access-list>"
+stdacl_num :
+  - data : "0"
+    valid : 0
+    msg : "area1 lower out of range"
+  - data : "1"
+    valid : 1
+    msg : "area1 lower-bound"
+  - data : "99"
+    valid : 1
+    msg : "area1 upper-bound"
+  - data : "1299"
+    valid : 0
+    msg : "area2 lower out of range"
+  - data : "1300"
+    valid : 1
+    msg : "area2 lower-bound"
+  - data : "1999"
+    valid : 1
+    msg : "area2 upper-bound"
+extacl_num :
+  - data : "100"
+    valid : 1
+    msg : "area1 lower-bound"
+  - data : "199"
+    valid : 1
+    msg : "area1 upper-bound"
+  # - data : "99"
+  #   valid : 0
+  #   msg : "area1 lower out of range"
+  - data : "200"
+    valid : 0
+    msg : "area1 upper out of range"
+  - data : "2000"
+    valid : 1
+    msg : "area2 lower-bound"
+  - data : "2699"
+    valid : 1
+    msg : "area2 upper-bound"
+  # - data : "1999"
+  #   valid : 0
+  #   msg : "area2 lower out of range"
+  - data : "2700"
+    valid : 0
+    msg : "area2 upper out of range"
+dynamic_spec :
+  - data : ''
+    valid : 1
+  - data : 'dynamic dynamicname'
+    valid : 1
+  - data : 'dynamic dynamicname timeout 3'
+    valid : 1        
+  - data : 'dynamic dynamicname timeout'
+    valid : 0
+    msg : "missing timeout <min>"
+  - data : 'dnamic dynamicname'
+    valid : 0
+    msg : "typo <dynamic>"
+action :
+  - data : ''
+    valid : 0
+    msg : 'missing <action>'
+  - data : 'permit'
+    valid : 1
+  - data : 'deny'
+    valid : 1
+  - data : 'drop'
+    valid : 0
+    msg : 'unknown action'
+ip_proto :
+  - data : ''
+    valid : 0
+    msg : 'missing <protocol>'
+  - data : 'ip'
+    valid : 1
+  - data : 'ahp'
+    valid : 1
+  - data : '0'
+    valid : 1
+  - data : '255'
+    valid : 1
+    msg : 'upper bound'
+  - data : '256'
+    valid : 0
+    msg : 'out of range'
+    todo : "not implemented, yet."
+ip_spec1 :
+  - data : 'any'
+    valid : 1
+  - data : 'host 192.168.0.1'
+    valid : 1
+  - data : '192.168.0.0 0.0.0.128'
+    valid : 1
+  - data : '192.168.0.2'
+    valid : 0
+    msg : 'missing <host>'
+  - data : '1921.68.0.2'
+    valid : 0
+    msg : 'ip: out of range'
+ip_spec2 :
+  - data : 'any'
+    valid : 1
+  - data : 'host 10.1.0.1'
+    valid : 1
+  - data : '10.1.0.0 0.0.128.255'
+    valid : 1
+  - data : '10.1.0.2'
+    valid : 0
+    msg : 'missing <host>'
+  - data : '10.1.0.256'
+    valid : 0
+    msg : 'ip: out of range'
+icmp_proto :
+  - data : ""
+    valid : 0
+    msg : 'missing <icmp>'
+  - data : "icmp"
+    valid : 1
+icmp_qualifier :
+  - data : ""
+    valid : 1
+  - data : 'administratively-prohibited'
+    valid : 1
+  - data : '0'
+    valid : 1
+    msg : "icmp type num only"
+  - data : '0 255'
+    valid : 1
+    msg : "icmp type/code num"
+  - data : "256 0"
+    valid : 0
+    msg : "type num: out of range"
+    todo : "not implemented, yet."
+  - data : "0 256"
+    valid : 0
+    msg : "code num: out of range"
+    todo : "not implemented, yet."
+std_acl_log_spec :
+  - data : ""
+    valid : 1
+  - data : "log"
+    valid : 1
+  - data : "log logcookie"
+    valid : 1
+ext_acl_log_spec :
+  - data : ""
+    valid : 1
+  - data : "log"
+    valid : 1
+  - data : "log logcookie"
+    valid : 1
+  - data : "log-input"
+    valid : 1
+  - data : "log-input logcookie"
+    valid : 1
