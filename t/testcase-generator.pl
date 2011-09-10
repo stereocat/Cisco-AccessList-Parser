@@ -62,26 +62,32 @@ if ( !defined( $ARGV[0] ) ) {
         die "usage: $0 testsetting.conf ";
 }
 my $test_conf_file = $ARGV[0];
-my $test_conf      = YAML::XS::LoadFile($test_conf_file);
-if ( !exists( $test_conf->{casedata} ) ) {
-        die "data file not specified in conf file: $test_conf_file";
+my $test_conf_list = YAML::XS::LoadFile($test_conf_file);
+
+foreach my $test_case (@$test_conf_list) {
+
+    # data check
+    if ( !exists( $test_case->{testname} ) ) {
+        die "test case name: not specified in conf file: $test_conf_list";
+    }
+    if ( !exists( $test_case->{casedata} ) ) {
+        die "data file: not specified in conf file: $test_conf_file";
+    }
+    if ( !exists( $test_case->{fieldseq} ) ) {
+        die "fieldseq-data: not contained in conf file: $test_conf_file";
+    }
+
+    # data construction sequence data list
+    my $fieldseq = $test_case->{fieldseq};
+
+    # load data file (input)
+    my $field_data_file = $test_case->{casedata};
+    my $field_data      = YAML::XS::LoadFile($field_data_file);
+
+    # generated test case
+    my $generated_test_case = generate_case( $field_data, $fieldseq );
+
+    # save generated test case to dat file
+    my $test_dat_file  = $test_case->{testname} . '.dat';
+    YAML::XS::DumpFile( $test_dat_file, $generated_test_case );
 }
-if ( !exists( $test_conf->{fieldseq} ) ) {
-        die "fieldseq-data are not contained in conf file: $test_conf_file";
-}
-
-# data construction sequence data
-my $fieldseq = $test_conf->{fieldseq};
-
-# data file (input)
-my $field_data_file = $test_conf->{casedata};
-my $field_data      = YAML::XS::LoadFile($field_data_file);
-
-# generated test case file (output)
-my $test_case_file  = $test_conf_file;
-$test_case_file =~ s/\.conf$//g;
-$test_case_file = $test_case_file . '.dat';
-
-# run!
-my $test_case = generate_case( $field_data, $fieldseq );
-YAML::XS::DumpFile( $test_case_file, $test_case );

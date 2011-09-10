@@ -13,11 +13,12 @@ use Data::Dumper;
 
 my $acl_table; # initialized in is_acl_accepted()
 my $curr_acl_name;
+
 %}
 
 %start expr
 
-## %tree
+# %tree
 
 %%
 
@@ -25,12 +26,13 @@ my $curr_acl_name;
 # grammer body section
 ###
 
-expr: acl
-        | acl expr
+expr : ipacl
+        | ipacl expr
         ;
 
-acl : numbered_acl
+ipacl : numbered_acl
         | named_acl
+        | objgrp
         ;
 
 # standard access-list
@@ -69,6 +71,7 @@ ext_acl_body : action ip_proto ip_spec ip_spec
         | action icmp_proto ip_spec ip_spec icmp_qualifier
         | action tcp_proto tcp_src_spec tcp_dst_spec tcp_flags_list
         | action udp_proto udp_src_spec udp_dst_spec
+        | action objgrp_service_spec objgrp_src_spec objgrp_dst_spec
         ;
 
 # protocols
@@ -173,6 +176,81 @@ timeout_spec :
         | TIMEOUT NUMBER
         ;
 
+# object-group
+objgrp : objgrp_service
+        | objgrp_network
+        ;
+
+objgrp_service_spec : OBJGRP STRING # service object group
+        ;
+
+objgrp_src_spec : OBJGRP STRING # network object group
+        | ip_spec
+        ;
+
+objgrp_dst_spec : OBJGRP STRING # network object group
+        | ip_spec
+        ;
+
+objgrp_network : OBJGRP NETWORK objgrp_network_entry_list
+        ;
+
+objgrp_network_entry_list : objgrp_network_entry
+        | objgrp_network_entry objgrp_network_entry_list
+        ;
+
+objgrp_network_entry : DESCRIPTION
+        | HOST IPV4_ADDR
+        | IPV4_ADDR IPV4_ADDR
+        | IPV4_ADDR SLASH NUMBER # 0-32
+        | RANGE IPV4_ADDR IPV4_ADDR
+        ;
+
+objgrp_service : OBJGRP SERVICE objgrp_service_entry_list
+        ;
+
+objgrp_service_entry_list : objgrp_service_entry
+        | objgrp_service_entry objgrp_service_entry_list
+        ;
+
+objgrp_service_entry : DESCRIPTION
+        | ip_proto
+        | tcp_proto objgrp_tcp_proto
+        | udp_proto objgrp_udp_proto
+        | TCPUDP objgrp_tcpudp_proto
+        ;
+
+objgrp_tcp_proto :
+        | unary_operator tcp_port_qualifier
+        | RANGE tcp_port_qualifier tcp_port_qualifier
+        | SOURCE tcp_port_qualifier
+        | tcp_port_qualifier
+        ;
+
+objgrp_udp_proto :
+        | unary_operator udp_port_qualifier
+        | RANGE udp_port_qualifier udp_port_qualifier
+        | SOURCE udp_port_qualifier
+        | udp_port_qualifier
+        ;
+
+objgrp_tcpudp_proto :
+        | unary_operator tcpudp_port_qualifier
+        | RANGE tcpudp_port_qualifier tcpudp_port_qualifier
+        | SOURCE tcpudp_port_qualifier
+        | tcpudp_port_qualifier
+        ;
+
+tcpudp_port_qualifier : NUMBER        # port number (0-65535)
+        | DISCARD
+        | DOMAIN
+        | ECHO
+        | PIM_AUTO_RP
+        | SUNRPC
+        | SYSLOG
+        | TACACS
+        | TALK
+        ;
 
 # icmp qualifier
 
@@ -248,7 +326,8 @@ unary_operator : GT
         | LT
         ;
 
-tcp_port_qualifier : BGP
+tcp_port_qualifier : NUMBER        # port number (0-65535)
+        | BGP
         | CHARGEN 
         | CMD 
         | DAYTIME 
@@ -281,10 +360,10 @@ tcp_port_qualifier : BGP
         | UUCP 
         | WHOIS 
         | WWW
-        | NUMBER        # port number (0-65535)
         ;
 
-udp_port_qualifier : BIFF 
+udp_port_qualifier : NUMBER        # port number (0-65535)
+        | BIFF 
         | BOOTPC 
         | BOOTPS 
         | DISCARD 
@@ -311,7 +390,6 @@ udp_port_qualifier : BIFF
         | TIME 
         | WHO 
         | XDMCP
-        | NUMBER        # port number (0-65535)
         ;
 
 
@@ -354,28 +432,28 @@ other_qualifier: dscp_rule
 dscp_rule : DSCP dscp_spec
         ;
 
-dscp_spec : NUMBER
-        | AF11
-        | AF12
-        | AF13
-        | AF21
-        | AF22
-        | AF23
-        | AF31
-        | AF32
-        | AF33
-        | AF41
-        | AF42
-        | AF43
-        | CS1
-        | CS2
-        | CS3
-        | CS4
-        | CS5
-        | CS6
-        | CS7
-        | DEFAULT
-        | EF
+dscp_spec : NUMBER # 0-63
+        | AF11     # 001010
+        | AF12     # 001100
+        | AF13     # 001110
+        | AF21     # 010010
+        | AF22     # 010100
+        | AF23     # 010110
+        | AF31     # 011010
+        | AF32     # 011100
+        | AF33     # 011110
+        | AF41     # 100010
+        | AF42     # 100100
+        | AF43     # 100110
+        | CS1      # 001000
+        | CS2      # 010000
+        | CS3      # 011000
+        | CS4      # 100000
+        | CS5      # 101000
+        | CS6      # 110000
+        | CS7      # 111000
+        | DEFAULT  # 000000
+        | EF       # 101110
         ;
 
 logging: LOG_INPUT log_cookie
@@ -398,17 +476,17 @@ tos_string: TOS_MAX_REL
         ;
 
 precedence_qualifier: PRECEDENCE precedence_string
-        | PRECEDENCE NUMBER
+        | PRECEDENCE NUMBER # 0-7
         ;
 
-precedence_string: PREC_CRITICAL
-        | PREC_FLASH
-        | PREC_FLASH_OVERR
-        | PREC_IMMED
-        | PREC_INET
-        | PREC_NET
-        | PREC_PRIO
-        | PREC_ROUTINE
+precedence_string: PREC_CRITICAL # 5
+        | PREC_FLASH             # 3
+        | PREC_FLASH_OVERR       # 4
+        | PREC_IMMED             # 2
+        | PREC_INET              # 6
+        | PREC_NET               # 7
+        | PREC_PRIO              # 1
+        | PREC_ROUTINE           # 0
         ;
 
 time_range_spec: TIME_RANGE STRING
@@ -417,7 +495,7 @@ time_range_spec: TIME_RANGE STRING
 recursive_qualifier : REFLECT STRING timeout_spec
         ;
 
-ttl_qualifier : TTL unary_operator NUMBER
+ttl_qualifier : TTL unary_operator NUMBER # 0-255
         | TTL RANGE NUMBER NUMBER
         ;
 
@@ -478,6 +556,11 @@ sub yylex {
         # ÇƒÇ≠ÇÈÇÃÇ≈íçà”ÅB
         if (/\G(?:remark)(.*)/gc) {
             return ( 'REMARK', $1 );
+        }
+
+        # object-group description
+        if (/\G(?:description)(.*)/gc) {
+            return ( 'DESCRIPTION', $1 );
         }
 
         # !comment line
@@ -786,6 +869,14 @@ sub yylex {
         m/\G(ump)\s+/gc          and return ( 'UMP',          $1 );
         m/\G(visa)\s+/gc         and return ( 'VISA',         $1 );
         m/\G(zsu)\s+/gc          and return ( 'ZSU',          $1 );
+
+        # object-group
+        m/\G(object-group)\s+/gc and return ( 'OBJGRP',  $1 );
+        m/\G(network)\s+/gc      and return ( 'NETWORK', $1 );
+        m/\G(service)\s+/gc      and return ( 'SERVICE', $1 );
+        m/\G(tcp-udp)\s+/gc      and return ( 'TCPUDP',  $1 );
+        m/\G(source)\s+/gc       and return ( 'SOURCE',  $1 );
+        ## description ÇÕ remark àµÇ¢
 
         m/\G($RE{net}{IPv4}{dec})\s+/gc and return ( 'IPV4_ADDR', $1 );
 
