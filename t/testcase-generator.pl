@@ -43,10 +43,10 @@ sub generate_case {
             my $later_valid = $later_field->{valid};
             my $later_todo  = $later_field->{todo};
 
-            my $data  = join( q{ }, $curr_data, $later_data );
+            my $data = join( q{ }, $curr_data, $later_data );
             $data =~ s/\s+$//;
             my $valid = $curr_valid * $later_valid;
-            my $todo  = defined($curr_todo) ? $curr_todo : $later_todo;
+            my $todo = defined($curr_todo) ? $curr_todo : $later_todo;
 
             push( @$result,
                 { data => $data, valid => $valid, todo => $todo } );
@@ -59,7 +59,7 @@ sub generate_case {
 
 # read test-configuration file
 if ( !defined( $ARGV[0] ) ) {
-        die "usage: $0 testsetting.conf ";
+    die "usage: $0 testsetting.conf ";
 }
 my $test_conf_file = $ARGV[0];
 my $test_conf_list = YAML::XS::LoadFile($test_conf_file);
@@ -88,6 +88,6 @@ foreach my $test_case (@$test_conf_list) {
     my $generated_test_case = generate_case( $field_data, $fieldseq );
 
     # save generated test case to dat file
-    my $test_dat_file  = $test_case->{testname} . '.dat';
+    my $test_dat_file = $test_case->{testname} . '.dat';
     YAML::XS::DumpFile( $test_dat_file, $generated_test_case );
 }

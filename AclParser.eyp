@@ -545,7 +545,6 @@ sub yylex {
 
         # whitespace
         m/\G[\s\r\n\x0A\x0D]*/gc;
-        # m{\G[ \t]*(\#\!.*)?}gc;
 
         # remark 'remark ntp' ‚Ý‚½‚¢‚Èó‹µ‚Å REMARK NTP ‚Æ‚¢‚¤ token ‚ª
         # ‚©‚¦‚Á‚Ä‚µ‚Ü‚Á‚½‚Ì‚Å lexer ‘¤‚Å‰ñ”ð‚·‚éBremark ‚Ì‚ ‚Æ‚Ì•¶Žš
@@ -631,21 +630,21 @@ sub yylex {
         # ‚Å‚«‚È‚¢B'echo'‚¾‚¯“Á—á‚Æ‚µ‚Ä reduce action ‘¤‚Å‘Î‰ž‚·‚é‚©?
         
         # ip_proto (convert to protocol number)
-        m/\G(ahp)\s+/gc   and return ( 'AHP',   [$1, 51] );
-        m/\G(eigrp)\s+/gc and return ( 'EIGRP', [$1, 88] );
-        m/\G(esp)\s+/gc   and return ( 'ESP',   [$1, 51] );
-        m/\G(gre)\s+/gc   and return ( 'GRE',   [$1, 46] );
-        m/\G(icmp)\s+/gc  and return ( 'ICMP',  [$1, 1] );
-        m/\G(igmp)\s+/gc  and return ( 'IGMP',  [$1, 2] );
-        ## NOTICE! MUST ipinip first: for longuest match ipinip->ip
-        m/\G(ipinip)\s+/gc and return ( 'IPINIP', [$1, 94] );
-        m/\G(ip)\s+/gc     and return ( 'IP',     [$1, undef] ); # NOT 0
-        m/\G(nos)\s+/gc    and return ( 'NOS',    [$1, undef] ); # number unknown...
-        m/\G(ospf)\s+/gc   and return ( 'OSPF',   [$1, 89] );
-        m/\G(pcf)\s+/gc    and return ( 'PCP',    [$1, 108] );
-        m/\G(pim)\s+/gc    and return ( 'PIM',    [$1, 103] );
-        m/\G(tcp)\s+/gc    and return ( 'TCP',    [$1, 6] );
-        m/\G(udp)\s+/gc    and return ( 'UDP',    [$1, 17] );
+        m/\G(ahp)\s+/gc    and return ( 'AHP',    [ $1, 51 ] );
+        m/\G(eigrp)\s+/gc  and return ( 'EIGRP',  [ $1, 88 ] );
+        m/\G(esp)\s+/gc    and return ( 'ESP',    [ $1, 51 ] );
+        m/\G(gre)\s+/gc    and return ( 'GRE',    [ $1, 46 ] );
+        m/\G(icmp)\s+/gc   and return ( 'ICMP',   [ $1, 1 ] );
+        m/\G(igmp)\s+/gc   and return ( 'IGMP',   [ $1, 2 ] );
+        m/\G(ipinip)\s+/gc and return ( 'IPINIP', [ $1, 94 ] );
+        m/\G(ip)\s+/gc     and return ( 'IP',     [ $1, undef ] );    # NOT 0
+        m/\G(nos)\s+/gc
+            and return ( 'NOS', [ $1, undef ] );    # number unknown...
+        m/\G(ospf)\s+/gc and return ( 'OSPF', [ $1, 89 ] );
+        m/\G(pcf)\s+/gc  and return ( 'PCP',  [ $1, 108 ] );
+        m/\G(pim)\s+/gc  and return ( 'PIM',  [ $1, 103 ] );
+        m/\G(tcp)\s+/gc  and return ( 'TCP',  [ $1, 6 ] );
+        m/\G(udp)\s+/gc  and return ( 'UDP',  [ $1, 17 ] );
 
         # other_qualifier
         m/\G(fragments)\s+/gc and return ( 'FRAGMENTS', $1 );
@@ -666,7 +665,6 @@ sub yylex {
         m/\G(conversion-error)\s+/gc    and return ( 'CONV_ERR',        $1 );
         m/\G(dod-host-prohibited)\s+/gc and return ( 'DOD_HOST_PROHIB', $1 );
         m/\G(dod-net-prohibited)\s+/gc  and return ( 'DOD_NET_PROHIB',  $1 );
-        ## NOTICE! MUST echo-reply first: for longuest match
         m/\G(echo-reply)\s+/gc          and return ( 'ECHO_REPLY',      $1 );
         m/\G(echo)\s+/gc                and return ( 'ECHO',            $1 );
         m/\G(general-parameter-problem)\s+/gc
@@ -762,10 +760,9 @@ sub yylex {
         m/\G(discard)\s+/gc and return ( 'DISCARD', [ $1, 9 ] );
         m/\G(domain)\s+/gc  and return ( 'DOMAIN',  [ $1, 53 ] );
         ## overwrap token: icmp echo...
-        m/\G(echo)\s+/gc   and return ( 'ECHO',   [ $1, 7 ] );
-        m/\G(exec)\s+/gc   and return ( 'EXEC',   [ $1, 512 ] );
-        m/\G(finger)\s+/gc and return ( 'FINGER', [ $1, 79 ] );
-        ## NOTICE! MUST ftp-data first: for longuest match
+        m/\G(echo)\s+/gc        and return ( 'ECHO',        [ $1, 7 ] );
+        m/\G(exec)\s+/gc        and return ( 'EXEC',        [ $1, 512 ] );
+        m/\G(finger)\s+/gc      and return ( 'FINGER',      [ $1, 79 ] );
         m/\G(ftp-data)\s+/gc    and return ( 'FTP_DATA',    [ $1, 20 ] );
         m/\G(ftp)\s+/gc         and return ( 'FTP',         [ $1, 21 ] );
         m/\G(gopher)\s+/gc      and return ( 'GOPHER',      [ $1, 70 ] );
