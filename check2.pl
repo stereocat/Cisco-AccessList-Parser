@@ -83,7 +83,7 @@ access-list 100 deny   ip any any log
 access-list 110 remark SPLIT_VPN
 access-list 110 permit ip 192.168.0.0 0.0.255.255 any
 access-list 120 permit ip 192.168.0.0 0.0.255.255 any
-access-list 120 permit tcp deny deny log
+access-list 120 permit tcp any any log
 EOACL
 
 
@@ -109,13 +109,16 @@ access-list 100 permit udp any eq 0 any eq 0
 access-list 100 deny   ip any any log
 access-list 110 remark SPLIT_VPN
 access-list 110 permit ip 192.168.0.0 0.0.255.255 any
+access-lst 110 permit hoge
+access-list 110 deny ip any any log
 access-list 120 permit ip 192.168.0.0 0.0.255.255 any
-access-list 120 permit tcp deny deny log
+access-list 120 permit tcp any any log
 EOACL
 
     my $multiple_named_std_acl = << 'EOACL';
 ip access-list standard remote-ipv4
  permit 192.168.0.0 0.0.255.255
+ remark deny all
  deny   any log
 !
 ip access-list standard test-acl
@@ -127,12 +130,13 @@ ip access-list standard test-acl
 EOACL
 
     my $multiple_named_ext_acl = << 'EOACL';
+!
 ip access-list extended FA0-IN
  deny   ip 169.254.0.0 0.0.255.255 any log
  deny   ip 224.0.0.0 31.255.255.255 any log
  deny   tcp any any eq 135 log
 !
-ip acess-list extended FA0-OUT
+ip access-list extended FA0-OUT
  deny   ip any 10.0.0.0 0.255.255.255 log
  permit icmp any any
  permit ip any any reflect iptraffic timeout 300
@@ -241,13 +245,14 @@ ip access-list standard remote-ipv4
  deny   any any log
 EOACL
 
+    my $test_data = $multiple_named_ext_acl;
     my $aclparser;
     $aclparser = AclParser->new();
-    $aclparser->set_yydata_input($input7);
+    $aclparser->set_yydata_input($test_data);
     parse_run($aclparser);
     print "==================\n";
     $aclparser = AclParser->new();
-    $aclparser->set_yydata_input($input7);
+    $aclparser->set_yydata_input($test_data);
     $aclparser->lex_check();
 }
 

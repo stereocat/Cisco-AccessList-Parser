@@ -11,12 +11,13 @@ use warnings;
 use Regexp::Common qw/number net/;
 use Data::Dumper;
 
-my $acl_table = [];
+my $acl_table; # initialized in is_acl_accepted()
+my $curr_acl_name;
 %}
 
 %start expr
 
-%tree
+## %tree
 
 %%
 
@@ -36,11 +37,32 @@ acl : numbered_acl
 
 numbered_acl : STDACL std_acl
                 {
-                    push @{$acl_table}, $_[1];
+                    $curr_acl_name = $_[1];
+                    $acl_table->{$curr_acl_name} = []
+                        if ( !exists( $acl_table->{$curr_acl_name} ) );
+                    push @{ $acl_table->{$curr_acl_name} }, "std_acl";
+
+                    # eval {
+                    #     $acl_table->{$curr_acl_name} = []
+                    #         if ( !exists( $acl_table->{$curr_acl_name} ) );
+                    #     push @{ $acl_table->{$curr_acl_name} }, "std_acl";
+                    # };
+                    # if ($@) {
+                    #     print "\n@@ STDACL std_acl\n";
+                    #     print Dumper $curr_acl_name, $acl_table;
+                    #     print "\nERROR: ", $@, "\n";
+                    # }
+                    # else {
+                    #     print "\n@@ STDACL std_acl\n";
+                    #     print Dumper $curr_acl_name, $acl_table;
+                    # }
                 }
         | EXTACL ext_acl
                 {
-                    push @{$acl_table}, $_[1];
+                    $curr_acl_name = $_[1];
+                    push @{$acl_table->{$curr_acl_name}},  "ext_acl";
+                    # print "\n@@ EXTACL ext_acl\n";
+                    # print Dumper $curr_acl_name, $acl_table;
                 }
         ;
 
@@ -107,12 +129,17 @@ named_acl : std_named_acl_header std_named_acl_entry_list
 
 std_named_acl_header : IPACL STANDARD STRING
                 {
-                    push @$acl_table, $_[3];
+                    $curr_acl_name = $_[3];
+                    $acl_table->{$curr_acl_name} = [];
+                    # push @$acl_table, $_[3];
                 }
         ;
 
 std_named_acl_entry_list :
         | std_named_acl_entry std_named_acl_entry_list
+                {
+                    push @{ $acl_table->{$curr_acl_name} }, "std_named_acl";
+                }
         ;
 
 std_named_acl_entry: seq_number std_acl
@@ -121,12 +148,17 @@ std_named_acl_entry: seq_number std_acl
 
 ext_named_acl_header : IPACL EXTENDED STRING
                 {
-                    push @$acl_table, $_[3];
+                    $curr_acl_name = $_[3];
+                    $acl_table->{$curr_acl_name} = [];
+                    # push @$acl_table, $_[3];
                 }
         ;
 
 ext_named_acl_entry_list :
         | ext_named_acl_entry ext_named_acl_entry_list
+                {
+                    push @{ $acl_table->{$curr_acl_name} }, "ext_named_acl";
+                }
         ;
 
 ext_named_acl_entry: seq_number ext_acl
@@ -397,11 +429,7 @@ precedence_string: PREC_CRITICAL
 time_range_spec: TIME_RANGE STRING
         ;
 
-recursive_qualifier : REFLECT STRING recursive_timeout
-        ;
-
-recursive_timeout :
-        | NUBMER
+recursive_qualifier : REFLECT STRING timeout_spec
         ;
 
 ttl_qualifier : TTL unary_operator NUMBER
@@ -452,14 +480,35 @@ sub yylex {
     for ( $p->YYData->{INPUT} ) {
         # print "# $_ pos=", pos(), "\n";
 
-        # whitespace and comment
+        # whitespace
         m/\G[\s\r\n\x0A\x0D]*/gc;
         # m{\G[ \t]*(\#\!.*)?}gc;
+
+        # remark 'remark ntp' みたいな状況で REMARK NTP という token が
+        # かえってしまったので lexer 側で回避する。remark のあとの文字
+        # 列は任意で行末まで読み捨てないといけない(remark ip acl hoge
+        # とかだって書けるのでそのままだと処理できない)。ただ
+        # /\Gremark\s+(.*)$/ にしてたら $ がマッチしなくて行末がSTRING
+        # にひっかかる。改行まで含めないと /''/が STRING としてひっかかっ
+        # てくるので注意。
+        if (/\G(?:remark)(.*)/gc) {
+            return ( 'REMARK', $1 );
+        }
+
+        # !comment line
+        if(/\G(:?\!).*[\r\n\x0A\x0D]*/gc) {
+            # print "!COMMENT\n";
+        }
+
+        #
+        # コメント/Remark 行を処理したあとで通常のACL Parseにはいる
+        #
 
         # reserved
         m/\G(\/)/gc   and return ( 'SLASH', $1 );
         m/\G(ipv6)/gc and return ( 'IPV6',  $1 );
 
+        # numbered acl
         if (/\Gaccess-list\s+(\d+)/gc) {
             my $aclnum = $1;
 
@@ -484,20 +533,6 @@ sub yylex {
         m/\G(permit)\s+/gc and return ( 'PERMIT', $1 );
         m/\G(deny)\s+/gc   and return ( 'DENY',   $1 );
 
-        # remark 'remark ntp' みたいな状況で REMARK NTP という token が
-        # かえってしまったので lexer 側で回避する。remark のあとの文字
-        # 列は任意で行末まで読み捨てないといけない(remark ip acl hoge
-        # とかだって書けるのでそのままだと処理できない)。ただ
-        # /\Gremark\s+(.*)$/ にしてたら $ がマッチしなくて行末がSTRING
-        # にひっかかる。改行まで含めないと /''/が STRING としてひっかかっ
-        # てくるので注意。
-
-        if (/\G(?:remark)\s*(.*)/gc) {
-            return ( 'REMARK', $1 );
-        }
-
-        # m/\G(remark)\s+/gc and return ( 'REMARK', $1 );
-        
         # dynamic_spec
         m/\G(dynamic)\s+/gc and return ( 'DYNAMIC', $1 );
         m/\G(timeout)\s+/gc and return ( 'TIMEOUT', $1 );
@@ -785,16 +820,30 @@ sub yylex {
 
 ## Error Handler
 sub yyerror {
-    die "Syntax error near "
-        . ( $_[0]->YYCurval ? $_[0]->YYCurval : "end of file" ) . "\n";
+    my $self = shift;
+    my($token)=$self->YYCurval;
+    my($what)= $token ? $token : "end-of-input";
+    my @expected = $self->YYExpect();
+
+    print STDERR
+        "ERROR: Syntax error in ACL:$curr_acl_name, near: /$what/.\n",
+        "Expected one of these tokens: @expected\n";
+
+    # delete last acl
+    delete $acl_table->{$curr_acl_name};
+    # print "Parse Error in $curr_acl_name, delete from list\n";
+    # print Dumper $curr_acl_name, $acl_table;
+
 }
+
+## Error Recovery
 
 ## 
 sub is_acl_accepted {
     my $self  = shift;
     my $debug = shift;
 
-    $acl_table = [];
+    $acl_table = {};
     eval {
         $self->YYParse(
             yylex   => \&yylex,
@@ -803,17 +852,9 @@ sub is_acl_accepted {
         );
     };
 
-    print Dumper $acl_table if defined($debug);
+    print Dumper $curr_acl_name, $acl_table if defined($debug);
 
-    if ($@) {
-        # delete last acl
-        return 0;
-    }
-    else {
-        return 1;
-    }
-
-#    return @$acl_table;
+    return keys (%{$acl_table})
 }
 
 ## setter

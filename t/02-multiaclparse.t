@@ -20,7 +20,7 @@ access-list 99 permit 192.168.0.0 0.0.255.255
 access-list 99 deny   any log
 EOD
 $p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 6, "multiple std acl");
+cmp_ok($p->is_acl_accepted(), '==', 4, "multiple std acl");
 
 $data = << 'EOD';
 access-list 100 remark DNS Exempt
@@ -39,10 +39,10 @@ access-list 100 deny   ip any any log
 access-list 110 remark SPLIT_VPN
 access-list 110 permit ip 192.168.0.0 0.0.255.255 any
 access-list 120 permit ip 192.168.0.0 0.0.255.255 any
-access-list 120 permit tcp deny deny log
+access-list 120 permit ip any any log
 EOD
 $p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '>', 0, "multiple ext acl");
+cmp_ok($p->is_acl_accepted(), '==', 3, "multiple ext acl");
 
 $data = << 'EOD';
 access-list 1 permit 192.168.0.0 0.0.255.255
@@ -67,10 +67,10 @@ access-list 100 deny   ip any any log
 access-list 110 remark SPLIT_VPN
 access-list 110 permit ip 192.168.0.0 0.0.255.255 any
 access-list 120 permit ip 192.168.0.0 0.0.255.255 any
-access-list 120 permit tcp deny deny log
+access-list 120 permit ip any any log
 EOD
 $p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '>', 0, "multiple ext/std acl mix");
+cmp_ok($p->is_acl_accepted(), '==', 7, "multiple ext/std acl mix");
 
 
 $data = << 'EOD';
@@ -86,7 +86,7 @@ ip access-list standard test-acl
 !
 EOD
 $p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '>', 0, "multiple named-std-acl");
+cmp_ok($p->is_acl_accepted(), '==', 2, "multiple named-std-acl");
 
 $data = << 'EOD';
 ip access-list extended FA0-IN
@@ -94,7 +94,7 @@ ip access-list extended FA0-IN
  deny   ip 224.0.0.0 31.255.255.255 any log
  deny   tcp any any eq 135 log
 !
-ip acess-list extended FA0-OUT
+ip access-list extended FA0-OUT
  deny   ip any 10.0.0.0 0.255.255.255 log
  permit icmp any any
  permit ip any any reflect iptraffic timeout 300
@@ -102,7 +102,7 @@ ip acess-list extended FA0-OUT
 !
 EOD
 $p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '>', 0, "multiple named-ext-acl");
+cmp_ok($p->is_acl_accepted(), '==', 2, "multiple named-ext-acl");
 
 $data = << 'EOD';
 ip access-list extended FA0-IN
@@ -110,18 +110,18 @@ ip access-list extended FA0-IN
  deny   ip 224.0.0.0 31.255.255.255 any log
  deny   tcp any any eq 135 log
 !
-ip acess-list extended FA0-OUT
+ip access-list extended FA0-OUT
  deny   ip any 10.0.0.0 0.255.255.255 log
  permit icmp any any
  permit ip any any reflect iptraffic timeout 300
  deny   ip any any log
 !
-ip access-list extended FA0-IN
+ip access-list extended FA1-IN
  deny   ip 169.254.0.0 0.0.255.255 any log
  deny   ip 224.0.0.0 31.255.255.255 any log
  deny   tcp any any eq 135 log
 !
-ip acess-list extended FA0-OUT
+ip access-list extended FA1-OUT
  deny   ip any 10.0.0.0 0.255.255.255 log
  permit icmp any any
  permit ip any any reflect iptraffic timeout 300
@@ -129,5 +129,5 @@ ip acess-list extended FA0-OUT
 !
 EOD
 $p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '>', 0, "multiple named-ext/std-acl mix");
+cmp_ok($p->is_acl_accepted(), '==', 4, "multiple named-ext/std-acl mix");
 
