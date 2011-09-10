@@ -41,28 +41,13 @@ numbered_acl : STDACL std_acl
                     $acl_table->{$curr_acl_name} = []
                         if ( !exists( $acl_table->{$curr_acl_name} ) );
                     push @{ $acl_table->{$curr_acl_name} }, "std_acl";
-
-                    # eval {
-                    #     $acl_table->{$curr_acl_name} = []
-                    #         if ( !exists( $acl_table->{$curr_acl_name} ) );
-                    #     push @{ $acl_table->{$curr_acl_name} }, "std_acl";
-                    # };
-                    # if ($@) {
-                    #     print "\n@@ STDACL std_acl\n";
-                    #     print Dumper $curr_acl_name, $acl_table;
-                    #     print "\nERROR: ", $@, "\n";
-                    # }
-                    # else {
-                    #     print "\n@@ STDACL std_acl\n";
-                    #     print Dumper $curr_acl_name, $acl_table;
-                    # }
                 }
         | EXTACL ext_acl
                 {
                     $curr_acl_name = $_[1];
+                    $acl_table->{$curr_acl_name} = []
+                        if ( !exists( $acl_table->{$curr_acl_name} ) );
                     push @{$acl_table->{$curr_acl_name}},  "ext_acl";
-                    # print "\n@@ EXTACL ext_acl\n";
-                    # print Dumper $curr_acl_name, $acl_table;
                 }
         ;
 
@@ -836,9 +821,6 @@ sub yyerror {
 
 }
 
-## Error Recovery
-
-## 
 sub is_acl_accepted {
     my $self  = shift;
     my $debug = shift;

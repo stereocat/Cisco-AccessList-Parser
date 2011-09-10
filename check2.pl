@@ -245,7 +245,14 @@ ip access-list standard remote-ipv4
  deny   any any log
 EOACL
 
-    my $test_data = $multiple_named_ext_acl;
+    my $input9 = << "EOACL";
+ip access-list standard remote-ipv4
+ deny host 192.168.0.33 log
+ permit 192.168.0.0 0.0.255.255
+ deny   any log
+EOACL
+
+    my $test_data = $input9;
     my $aclparser;
     $aclparser = AclParser->new();
     $aclparser->set_yydata_input($test_data);

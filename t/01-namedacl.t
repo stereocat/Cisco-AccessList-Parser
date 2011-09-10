@@ -58,6 +58,7 @@ ip access-list extended FA0-IN
  permit tcp any any established
  permit icmp any any
  deny   ip any any log
+!
 EOD
 $p->set_yydata_input($data);
 cmp_ok($p->is_acl_accepted(), '==', 1, "Normal named-ext-acl");

@@ -14,8 +14,8 @@ scripts: $(TEST_CASE_CONF) $(TEST_CASE_DATA) $(TEST_RUNNER)
 	perl testcase-generator.pl $<
 
 .dat.sh:
-	echo "#!/bin/sh" > $(<:%.dat=%.sh)
-	echo "perl -I.. test-runner.pl " $< >> $(<:%.dat=%.sh)
+	@echo "#!/bin/sh" > $(<:%.dat=%.sh)
+	@echo "perl -I.. test-runner.pl 2>/dev/null" $< >> $(<:%.dat=%.sh)
 
 clean:
 	rm -f *~ $(TEST_CASE_DATA) $(TEST_RUNNER) *.stackdump
