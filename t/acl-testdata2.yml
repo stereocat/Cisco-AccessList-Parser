@@ -33,6 +33,13 @@ tcp_proto :
 udp_proto :
   - data : 'udp'
     valid : 1
+tcpudp_proto :
+  - data : 'tcp'
+    valid : 1
+  - data : 'udp'
+    valid : 1
+  - data : 'object-group svgrp'
+    valid : 1
 ip_spec1 :
   - data : 'any'
     valid : 1
@@ -59,6 +66,24 @@ ip_spec2 :
   - data : '10.1.0.256'
     valid : 0
     msg : 'ip: out of range'
+ip_spec_objgrp1 :
+  - data : 'any'
+    valid : 1
+  - data : 'host 192.168.0.1'
+    valid : 1
+  - data : '192.168.0.0 0.0.0.128'
+    valid : 1
+  - data : 'object-group nwgrp1'
+    valid : 1
+ip_spec_objgrp2 :
+  - data : 'any'
+    valid : 1
+  - data : 'host 10.1.0.1'
+    valid : 1
+  - data : '10.1.0.0 0.0.128.255'
+    valid : 1
+  - data : 'object-group nwgrp2'
+    valid : 1
 tcp_port_spec1 :
   - data : ""
     valid : 1
@@ -126,7 +151,3 @@ ext_acl_log_spec :
     valid : 1
   - data : "log-input logcookie"
     valid : 1
-  - data : "65536"
-    valid : 0
-    msg : "port out of range"
-    todo : "port check: not implemented yet"

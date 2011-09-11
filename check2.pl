@@ -252,7 +252,28 @@ ip access-list standard remote-ipv4
  deny   any log
 EOACL
 
-    my $test_data = $input9;
+    my $objgrp1 = << "EOACL";
+object-group network SMTP_Server
+ description ISP SMTP server
+ host 192.168.0.2
+ 192.168.1.0 /24
+ 192.168.2.0 0.0.0.128
+ group-object other_network
+ host 172.16.2.3
+ range 192.168.3.2 192.168.3.200
+!
+object-group service Web_Service
+ description web service
+ icmp echo
+ tcp smtp
+ tcp telnet
+ tcp source range 1 65535
+ udp domain
+ tcp-udp range 2000 2005
+ group-object other-list
+EOACL
+
+    my $test_data = $objgrp1;
     my $aclparser;
     $aclparser = AclParser->new();
     $aclparser->set_yydata_input($test_data);
