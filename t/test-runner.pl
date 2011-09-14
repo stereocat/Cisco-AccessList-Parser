@@ -6,7 +6,7 @@ use YAML::XS;
 use Data::Dumper;
 use Test::More;
 use Parse::Eyapp;
-use AclParser;
+use Cisco::AccessList::Parser;
 
 if ( !defined( $ARGV[0] ) ) {
     die "usage: $0 test-data.dat";

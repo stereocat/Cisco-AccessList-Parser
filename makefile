@@ -1,11 +1,12 @@
-CLASS = AclParser
+CLASS = Parser
+CLASSNAME = 'Cisco::AccessList::'${CLASS}
 
-EYP_FILE = $(CLASS).eyp
-EYP_OUTPUT = $(CLASS).output
-EYP_MODULE = $(CLASS).pm
-EYP_MODULE_DIR = ./
+TEST_DIR = ./t
+LIB_DIR = ./lib/Cisco/AccessList
+EYP_FILE = ${LIB_DIR}/$(CLASS).eyp
+EYP_OUTPUT = ${LIB_DIR}/$(CLASS).output
+EYP_MODULE = ${LIB_DIR}/$(CLASS).pm
 EYP_GRAPH = $(CLASS).png
-TEST_DIR = ./t/
 
 EYP_GRAPH_GENERATOR = ./eypgraph.pl
 
@@ -23,12 +24,13 @@ output: $(EYP_OUTPUT)
 graph: $(EYP_GRAPH)
 
 test: $(EYP_MODULE)
-	make -C $(TEST_DIR) test
+	sh testcase-generator.sh
+	prove t/*.t
 
 # suffix rules
 
 .eyp.pm:
-	eyapp $<
+	eyapp -m ${CLASSNAME} $<
 
 .eyp.output:
 	eyapp -v $<
@@ -39,5 +41,6 @@ test: $(EYP_MODULE)
 # cleaning
 
 clean:
-	rm -f *.output *.png *~ *.stackdump
-	make -C $(TEST_DIR) clean
+	rm -f *~ *.stackdump *.png ${EYP_OUTPUT}
+	rm -f *~ *.stackdump ${TEST_DIR}/*.dat ${TEST_DIR}/*.dat.t
+

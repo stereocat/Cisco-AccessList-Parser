@@ -5,11 +5,14 @@
 ##
 
 %{
+# package Cisco::AccessList::Parser;
 use lib qw(.);
 use strict;
 use warnings;
 use Regexp::Common qw/number net/;
 use Data::Dumper;
+# use Carp;
+# use version; $VERSION = qv('0.0.3');
 
 my $acl_table; # initialized in is_acl_accepted()
 my $curr_acl_name;
@@ -124,7 +127,7 @@ std_named_acl_header : IPACL STANDARD STRING
         ;
 
 std_named_acl_entry_list :
-        | std_named_acl_entry std_named_acl_entry_list
+        | std_named_acl_entry_list std_named_acl_entry
                 {
                     push @{ $acl_table->{$curr_acl_name} }, "std_named_acl";
                 }
@@ -143,7 +146,7 @@ ext_named_acl_header : IPACL EXTENDED STRING
         ;
 
 ext_named_acl_entry_list :
-        | ext_named_acl_entry ext_named_acl_entry_list
+        | ext_named_acl_entry_list ext_named_acl_entry
                 {
                     push @{ $acl_table->{$curr_acl_name} }, "ext_named_acl";
                 }
@@ -206,7 +209,7 @@ objgrp_network_header : OBJGRP NETWORK STRING
         ;
 
 objgrp_network_entry_list :
-        | objgrp_network_entry objgrp_network_entry_list
+        | objgrp_network_entry_list objgrp_network_entry
                 {
                     push @{ $acl_table->{$curr_acl_name} }, "objgrp_nw";
                 }
@@ -231,7 +234,7 @@ objgrp_service_header : OBJGRP SERVICE STRING
         ;
 
 objgrp_service_entry_list :
-        | objgrp_service_entry objgrp_service_entry_list
+        | objgrp_service_entry_list objgrp_service_entry
                 {
                     push @{ $acl_table->{$curr_acl_name} }, "objgrp_svc";
                 }
@@ -246,8 +249,7 @@ objgrp_service_entry : DESCRIPTION
         | GRPOBJ STRING # nested object-group
         ;
 
-objgrp_tcp_proto :
-        | objgrp_tcp_proto_spec
+objgrp_tcp_proto : objgrp_tcp_proto_spec
         | SOURCE objgrp_tcp_proto_spec
         ;
 objgrp_tcp_proto_spec :
@@ -256,8 +258,7 @@ objgrp_tcp_proto_spec :
         | tcp_port_qualifier
         ;
 
-objgrp_udp_proto :
-        | objgrp_udp_proto_spec
+objgrp_udp_proto : objgrp_udp_proto_spec
         | SOURCE objgrp_udp_proto_spec
         ;
 objgrp_udp_proto_spec :
@@ -266,8 +267,7 @@ objgrp_udp_proto_spec :
         | udp_port_qualifier
         ;
 
-objgrp_tcpudp_proto :
-        | objgrp_tcpudp_proto_spec
+objgrp_tcpudp_proto : objgrp_tcpudp_proto_spec
         | SOURCE objgrp_tcpudp_proto_spec
         ;
 objgrp_tcpudp_proto_spec :
@@ -450,7 +450,7 @@ ack_flag : ESTABL
 # oether qualifier list
 
 other_qualifier_list :
-        |  other_qualifier other_qualifier_list
+        | other_qualifier_list other_qualifier
         ;
 
 other_qualifier: dscp_rule
@@ -991,3 +991,4 @@ sub lex_check {
         }
     } while ( defined($token) && defined($val) );
 }
+

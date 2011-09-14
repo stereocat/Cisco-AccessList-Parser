@@ -9,5 +9,6 @@ for dat in *.dat
 do
     testscript=${dat}.t
     echo "#!/bin/sh" > $testscript
-    echo "perl -I.. test-runner.pl" $dat >> $testscript
+    echo "perl test-runner.pl" $dat >> $testscript
 done
+

@@ -4,10 +4,10 @@ use strict;
 use warnings;
 use Test::More;
 use Parse::Eyapp;
-use AclParser;
+use Cisco::AccessList::Parser;
 
 plan (tests => 3);
-my $p = AclParser->new();
+my $p = Cisco::AccessList::Parser->new();
 
 my $data;
 
