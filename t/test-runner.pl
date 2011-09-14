@@ -17,7 +17,7 @@ my $test_case             = YAML::XS::LoadFile($test_data_output_file)
 
 my $test_count = @$test_case;
 plan (tests => $test_count);
-my $p = AclParser->new();
+my $p = Cisco::AccessList::Parser->new();
 
 foreach my $test (@$test_case) {
     my $data  = $test->{data};

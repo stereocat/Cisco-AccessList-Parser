@@ -5,14 +5,13 @@
 ##
 
 %{
-# package Cisco::AccessList::Parser;
 use lib qw(.);
 use strict;
 use warnings;
 use Regexp::Common qw/number net/;
 use Data::Dumper;
-# use Carp;
-# use version; $VERSION = qv('0.0.3');
+use version;
+our $VERSION = qv('0.0.1');
 
 my $acl_table; # initialized in is_acl_accepted()
 my $curr_acl_name;

@@ -6,7 +6,6 @@ use Parse::Eyapp;
 plan (tests => 3);
 
 use_ok( 'Cisco::AccessList::Parser' );
-# diag( "Testing Cisco::AccessList::Parser $Cisco::AccessList::Parser::VERSION" );
 
 my $p = Cisco::AccessList::Parser->new();
 
