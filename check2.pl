@@ -7,7 +7,7 @@ use warnings;
 use Parse::Eyapp;
 
 use Data::Dumper;
-use AclParser;
+use Cisco::AccessList::Parser;
 
 #sub TERMINAL::info { $_[0]{attr} }
 
@@ -275,11 +275,11 @@ EOACL
 
     my $test_data = $objgrp1;
     my $aclparser;
-    $aclparser = AclParser->new();
+    $aclparser = Cisco::AccessList::Parser->new();
     $aclparser->set_yydata_input($test_data);
     parse_run($aclparser);
     print "==================\n";
-    $aclparser = AclParser->new();
+    $aclparser = Cisco::AccessList::Parser->new();
     $aclparser->set_yydata_input($test_data);
     $aclparser->lex_check();
 }

@@ -7,12 +7,12 @@ use warnings;
 use Parse::Eyapp;
 
 use Data::Dumper;
-use AclParser;
+use Cisco::AccessList::Parser;
 
 #sub TERMINAL::info { $_[0]{attr} }
 
 sub line_by_line_test {
-    my $aclparser = AclParser->new();
+    my $aclparser = Cisco::AccessList::Parser->new();
     print "? ";
     while (<>) {
         last if m{^q(?:uit)?};

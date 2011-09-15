@@ -3,9 +3,11 @@ use warnings;
 use Test::More;
 use Parse::Eyapp;
 
-plan (tests => 3);
+plan (tests => 4);
 
+use_ok( 'Parse::Eyapp' );
 use_ok( 'Cisco::AccessList::Parser' );
+diag( "Testing Cisco::AccessList::Parser $Cisco::AccessList::Parser::VERSION" );
 
 my $p = Cisco::AccessList::Parser->new();
 

@@ -42,6 +42,6 @@ test: $(EYP_MODULE)
 # cleaning
 
 clean:
-	rm -f *~ *.stackdump ${EYP_GRAPH} ${EYP_OUTPUT}
-	rm -f *~ *.stackdump ${TEST_DIR}/*.dat ${TEST_DIR}/*.dat.t
-
+	rm -f ${EYP_GRAPH} ${EYP_OUTPUT}
+	rm -f ${TEST_DIR}/*.dat ${TEST_DIR}/*.dat.t
+	rm -f  *.stackdump *~ ${LIB_DIR}/*~ ${TEST_DIR}/*~

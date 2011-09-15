@@ -5,7 +5,6 @@
 ##
 
 %{
-use lib qw(.);
 use strict;
 use warnings;
 use Regexp::Common qw/number net/;
@@ -664,21 +663,20 @@ sub yylex {
         # Ç≈Ç´Ç»Ç¢ÅB'echo'ÇæÇØì¡ó·Ç∆ÇµÇƒ reduce action ë§Ç≈ëŒâûÇ∑ÇÈÇ©?
         
         # ip_proto (convert to protocol number)
-        m/\G(ahp)\s+/gc    and return ( 'AHP',    [ $1, 51 ] );
-        m/\G(eigrp)\s+/gc  and return ( 'EIGRP',  [ $1, 88 ] );
-        m/\G(esp)\s+/gc    and return ( 'ESP',    [ $1, 51 ] );
-        m/\G(gre)\s+/gc    and return ( 'GRE',    [ $1, 46 ] );
-        m/\G(icmp)\s+/gc   and return ( 'ICMP',   [ $1, 1 ] );
-        m/\G(igmp)\s+/gc   and return ( 'IGMP',   [ $1, 2 ] );
-        m/\G(ipinip)\s+/gc and return ( 'IPINIP', [ $1, 94 ] );
-        m/\G(ip)\s+/gc     and return ( 'IP',     [ $1, undef ] );    # NOT 0
-        m/\G(nos)\s+/gc
-            and return ( 'NOS', [ $1, undef ] );    # number unknown...
-        m/\G(ospf)\s+/gc and return ( 'OSPF', [ $1, 89 ] );
-        m/\G(pcf)\s+/gc  and return ( 'PCP',  [ $1, 108 ] );
-        m/\G(pim)\s+/gc  and return ( 'PIM',  [ $1, 103 ] );
-        m/\G(tcp)\s+/gc  and return ( 'TCP',  [ $1, 6 ] );
-        m/\G(udp)\s+/gc  and return ( 'UDP',  [ $1, 17 ] );
+        m/\G(ahp)\s+/gc    and return ( 'AHP',    $1 );
+        m/\G(eigrp)\s+/gc  and return ( 'EIGRP',  $1 );
+        m/\G(esp)\s+/gc    and return ( 'ESP',    $1 );
+        m/\G(gre)\s+/gc    and return ( 'GRE',    $1 );
+        m/\G(icmp)\s+/gc   and return ( 'ICMP',   $1 );
+        m/\G(igmp)\s+/gc   and return ( 'IGMP',   $1 );
+        m/\G(ipinip)\s+/gc and return ( 'IPINIP', $1 );
+        m/\G(ip)\s+/gc     and return ( 'IP',     $1 );
+        m/\G(nos)\s+/gc    and return ( 'NOS',    $1 );
+        m/\G(ospf)\s+/gc   and return ( 'OSPF',   $1 );
+        m/\G(pcf)\s+/gc    and return ( 'PCP',    $1 );
+        m/\G(pim)\s+/gc    and return ( 'PIM',    $1 );
+        m/\G(tcp)\s+/gc    and return ( 'TCP',    $1 );
+        m/\G(udp)\s+/gc    and return ( 'UDP',    $1 );
 
         # other_qualifier
         m/\G(fragments)\s+/gc and return ( 'FRAGMENTS', $1 );
@@ -692,7 +690,7 @@ sub yylex {
         # time_range_spec
         m/\G(time-range)\s+/gc and return ( 'TIME_RANGE', $1 );
 
-         # icmp_qualifier
+        # icmp_qualifier
         m/\G(administratively-prohibited)\s+/gc
             and return ( 'ADM_PROHIB', $1 );
         m/\G(alternate-address)\s+/gc   and return ( 'ALT_ADDR',        $1 );
@@ -788,66 +786,65 @@ sub yylex {
         m/\G(evaluate)\s+/gc and return ( 'EVALUATE', $1 );
 
         # tcp_port_qualifier
-        m/\G(bgp)\s+/gc     and return ( 'BGP',     [ $1, 179 ] );
-        m/\G(chargen)\s+/gc and return ( 'CHARGEN', [ $1, 19 ] );
-        m/\G(cmd)\s+/gc     and return ( 'CMD',     [ $1, 514 ] );
-        m/\G(daytime)\s+/gc and return ( 'DAYTIME', [ $1, 13 ] );
-        m/\G(discard)\s+/gc and return ( 'DISCARD', [ $1, 9 ] );
-        m/\G(domain)\s+/gc  and return ( 'DOMAIN',  [ $1, 53 ] );
+        m/\G(bgp)\s+/gc     and return ( 'BGP',     $1 );
+        m/\G(chargen)\s+/gc and return ( 'CHARGEN', $1 );
+        m/\G(cmd)\s+/gc     and return ( 'CMD',     $1 );
+        m/\G(daytime)\s+/gc and return ( 'DAYTIME', $1 );
+        m/\G(discard)\s+/gc and return ( 'DISCARD', $1 );
+        m/\G(domain)\s+/gc  and return ( 'DOMAIN',  $1 );
         ## overwrap token: icmp echo...
-        m/\G(echo)\s+/gc        and return ( 'ECHO',        [ $1, 7 ] );
-        m/\G(exec)\s+/gc        and return ( 'EXEC',        [ $1, 512 ] );
-        m/\G(finger)\s+/gc      and return ( 'FINGER',      [ $1, 79 ] );
-        m/\G(ftp-data)\s+/gc    and return ( 'FTP_DATA',    [ $1, 20 ] );
-        m/\G(ftp)\s+/gc         and return ( 'FTP',         [ $1, 21 ] );
-        m/\G(gopher)\s+/gc      and return ( 'GOPHER',      [ $1, 70 ] );
-        m/\G(hostname)\s+/gc    and return ( 'HOSTNAME',    [ $1, 101 ] );
-        m/\G(ident)\s+/gc       and return ( 'IDENT',       [ $1, 113 ] );
-        m/\G(irc)\s+/gc         and return ( 'IRC',         [ $1, 194 ] );
-        m/\G(klogin)\s+/gc      and return ( 'KSHELL',      [ $1, 543 ] );
-        m/\G(login)\s+/gc       and return ( 'LOGIN',       [ $1, 513 ] );
-        m/\G(lpd)\s+/gc         and return ( 'LPD',         [ $1, 515 ] );
-        m/\G(nntp)\s+/gc        and return ( 'NNTP',        [ $1, 119 ] );
-        m/\G(pim-auto-rp)\s+/gc and return ( 'PIM_AUTO_RP', [ $1, 496 ] );
-        m/\G(pop2)\s+/gc        and return ( 'POP2',        [ $1, 109 ] );
-        m/\G(pop3)\s+/gc        and return ( 'POP3',        [ $1, 110 ] );
-        m/\G(smtp)\s+/gc        and return ( 'SMTP',        [ $1, 25 ] );
-        m/\G(sunrpc)\s+/gc      and return ( 'SUNRPC',      [ $1, 111 ] );
-        m/\G(tacacs)\s+/gc      and return ( 'TACACS',      [ $1, 49 ] );
-        m/\G(talk)\s+/gc        and return ( 'TALK',        [ $1, 517 ] );
-        m/\G(telnet)\s+/gc      and return ( 'TELNET',      [ $1, 23 ] );
-        m/\G(time)\s+/gc        and return ( 'TIME',        [ $1, 37 ] );
-        m/\G(uucp)\s+/gc        and return ( 'UUCP',        [ $1, 540 ] );
-        m/\G(whois)\s+/gc       and return ( 'WHOIS',       [ $1, 43 ] );
-        m/\G(www)\s+/gc         and return ( 'WWW',         [ $1, 80 ] );
+        m/\G(echo)\s+/gc        and return ( 'ECHO',        $1 );
+        m/\G(exec)\s+/gc        and return ( 'EXEC',        $1 );
+        m/\G(finger)\s+/gc      and return ( 'FINGER',      $1 );
+        m/\G(ftp-data)\s+/gc    and return ( 'FTP_DATA',    $1 );
+        m/\G(ftp)\s+/gc         and return ( 'FTP',         $1 );
+        m/\G(gopher)\s+/gc      and return ( 'GOPHER',      $1 );
+        m/\G(hostname)\s+/gc    and return ( 'HOSTNAME',    $1 );
+        m/\G(ident)\s+/gc       and return ( 'IDENT',       $1 );
+        m/\G(irc)\s+/gc         and return ( 'IRC',         $1 );
+        m/\G(klogin)\s+/gc      and return ( 'KSHELL',      $1 );
+        m/\G(login)\s+/gc       and return ( 'LOGIN',       $1 );
+        m/\G(lpd)\s+/gc         and return ( 'LPD',         $1 );
+        m/\G(nntp)\s+/gc        and return ( 'NNTP',        $1 );
+        m/\G(pim-auto-rp)\s+/gc and return ( 'PIM_AUTO_RP', $1 );
+        m/\G(pop2)\s+/gc        and return ( 'POP2',        $1 );
+        m/\G(pop3)\s+/gc        and return ( 'POP3',        $1 );
+        m/\G(smtp)\s+/gc        and return ( 'SMTP',        $1 );
+        m/\G(sunrpc)\s+/gc      and return ( 'SUNRPC',      $1 );
+        m/\G(tacacs)\s+/gc      and return ( 'TACACS',      $1 );
+        m/\G(talk)\s+/gc        and return ( 'TALK',        $1 );
+        m/\G(telnet)\s+/gc      and return ( 'TELNET',      $1 );
+        m/\G(time)\s+/gc        and return ( 'TIME',        $1 );
+        m/\G(uucp)\s+/gc        and return ( 'UUCP',        $1 );
+        m/\G(whois)\s+/gc       and return ( 'WHOIS',       $1 );
+        m/\G(www)\s+/gc         and return ( 'WWW',         $1 );
 
         # udp_port_qualifier
-        m/\G(biff)\s+/gc   and return ( 'BIFF',   [ $1, 512 ] );
-        m/\G(bootpc)\s+/gc and return ( 'BOOTPC', [ $1, 68 ] );
-        m/\G(bootps)\s+/gc and return ( 'BOOTPS', [ $1, 67 ] );
-        ## discard defined at tcp_port_qualifier
-        m/\G(dnsix)\s+/gc and return ( 'DNSIX', [ $1, 195 ] );
-        ## echo defined at tcp_port_qualifier
-        m/\G(isakmp)\s+/gc        and return ( 'ISAKMP',        [ $1, 500 ] );
-        m/\G(mobile-ip)\s+/gc     and return ( 'MOBILE_IP',     [ $1, 434 ] );
-        m/\G(nameserver)\s+/gc    and return ( 'NAMESERVER',    [ $1, 42 ] );
-        m/\G(netbios-dgm)\s+/gc   and return ( 'NETBIOS_DGM',   [ $1, 138 ] );
-        m/\G(netbios-ns)\s+/gc    and return ( 'NETBIOS_NS',    [ $1, 137 ] );
-        m/\G(netbios-ss)\s+/gc    and return ( 'NETBIOS_SS',    [ $1, 139 ] );
-        m/\G(non500-isakmp)\s+/gc and return ( 'NON500_ISAKMP', [ $1, 4500 ] );
-        m/\G(ntp)\s+/gc           and return ( 'NTP',           [ $1, 123 ] );
-        m/\G(pim-auto-rp)\s+/gc   and return ( 'PIM_AUTO_RP',   [ $1, 496 ] );
-        m/\G(rip)\s+/gc           and return ( 'RIP',           [ $1, 520 ] );
-        ## NOTICE! MUST snmptrap first: for longuest match
-        m/\G(snmptrap)\s+/gc and return ( 'SNMPTRAP', [ $1, 162 ] );
-        m/\G(snmp)\s+/gc     and return ( 'SNMP',     [ $1, 161 ] );
-        ## sunrpc defined at tcp_port_qualifier
-        m/\G(syslog)\s+/gc and return ( 'SYSLOG', [ $1, 514 ] );
-        ## talk defined at tcp_port_qualifier
-        m/\G(tftp)\s+/gc and return ( 'TFTP', [ $1, 69 ] );
-        ## time defined at tcp_port_qualifier
-        m/\G(who)\s+/gc   and return ( 'WHO',   [ $1, 513 ] );
-        m/\G(xdmcp)\s+/gc and return ( 'XDMCP', [ $1, 177 ] );
+        m/\G(biff)\s+/gc   and return ( 'BIFF',   $1 );
+        m/\G(bootpc)\s+/gc and return ( 'BOOTPC', $1 );
+        m/\G(bootps)\s+/gc and return ( 'BOOTPS', $1 );
+        ## 'discard' defined at tcp_port_qualifier
+        m/\G(dnsix)\s+/gc and return ( 'DNSIX', $1 );
+        ## 'echo' defined at tcp_port_qualifier
+        m/\G(isakmp)\s+/gc        and return ( 'ISAKMP',        $1 );
+        m/\G(mobile-ip)\s+/gc     and return ( 'MOBILE_IP',     $1 );
+        m/\G(nameserver)\s+/gc    and return ( 'NAMESERVER',    $1 );
+        m/\G(netbios-dgm)\s+/gc   and return ( 'NETBIOS_DGM',   $1 );
+        m/\G(netbios-ns)\s+/gc    and return ( 'NETBIOS_NS',    $1 );
+        m/\G(netbios-ss)\s+/gc    and return ( 'NETBIOS_SS',    $1 );
+        m/\G(non500-isakmp)\s+/gc and return ( 'NON500_ISAKMP', $1 );
+        m/\G(ntp)\s+/gc           and return ( 'NTP',           $1 );
+        m/\G(pim-auto-rp)\s+/gc   and return ( 'PIM_AUTO_RP',   $1 );
+        m/\G(rip)\s+/gc           and return ( 'RIP',           $1 );
+        m/\G(snmp)\s+/gc          and return ( 'SNMP',          $1 );
+        m/\G(snmptrap)\s+/gc      and return ( 'SNMPTRAP',      $1 );
+        ## 'sunrpc' defined at tcp_port_qualifier
+        m/\G(syslog)\s+/gc and return ( 'SYSLOG', $1 );
+        ## 'talk' defined at tcp_port_qualifier
+        m/\G(tftp)\s+/gc and return ( 'TFTP', $1 );
+        ## 'time' defined at tcp_port_qualifier
+        m/\G(who)\s+/gc   and return ( 'WHO',   $1 );
+        m/\G(xdmcp)\s+/gc and return ( 'XDMCP', $1 );
 
         # dscp_rule
         m/\G(dscp)\s+/gc    and return ( 'DSCP',    $1 );
