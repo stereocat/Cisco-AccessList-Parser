@@ -2,6 +2,7 @@ CLASS = Parser
 CLASS_NAME = "Cisco::AccessList::${CLASS}"
 
 TEST_DIR = ./t
+TEST_CONF = ${wildcard ${TEST_DIR}/*.conf}
 LIB_DIR = ./lib/Cisco/AccessList
 EYP_FILE = ${LIB_DIR}/$(CLASS).eyp
 EYP_OUTPUT = ${LIB_DIR}/$(CLASS).output
@@ -25,7 +26,7 @@ output: $(EYP_OUTPUT)
 graph: $(EYP_GRAPH)
 
 test: $(EYP_MODULE) clean
-	perl ${TEST_DIR}/testcase-generator.pl
+	perl ${TEST_DIR}/testcase-generator.pl ${TEST_CONF}
 	prove -l ${TEST_DIR}/*.t
 
 # suffix rules

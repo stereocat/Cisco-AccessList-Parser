@@ -132,6 +132,7 @@ __DATA__
 use strict;
 use warnings;
 use Test::Base;
+use Test::More;
 use Cisco::AccessList::Parser;
 use Data::Dumper;
 
