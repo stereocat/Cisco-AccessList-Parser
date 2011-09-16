@@ -2,7 +2,6 @@
 use strict;
 use warnings;
 use YAML;
-use Data::Dumper;
 use Path::Class;
 
 sub generate_case {
@@ -134,7 +133,6 @@ use warnings;
 use Test::Base;
 use Test::More;
 use Cisco::AccessList::Parser;
-use Data::Dumper;
 
 my $p = Cisco::AccessList::Parser->new();
 
