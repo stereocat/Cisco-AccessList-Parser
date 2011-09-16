@@ -931,12 +931,20 @@ sub yyerror {
     my($what)= $token ? $token : "end-of-input";
     my @expected = $self->YYExpect();
 
-    print STDERR
-        "ERROR: Syntax error in ACL:$curr_acl_name, near: /$what/.\n",
-        "Expected one of these tokens: @expected\n";
+    if ( defined($curr_acl_name) ) {
+        # print STDERR
+        #     "ERROR: Syntax error in ACL:$curr_acl_name, near: /$what/.\n",
+        #     "Expected one of these tokens: @expected\n";
 
-    # delete last acl
-    delete $acl_table->{$curr_acl_name};
+        # delete last acl
+        delete $acl_table->{$curr_acl_name};
+    }
+    else {
+        # print STDERR
+        #     "ERROR: Syntax error, near: /$what/.\n",
+        #     "Expected one of these tokens: @expected\n";
+        
+    }
     # print "Parse Error in $curr_acl_name, delete from list\n";
     # print Dumper $curr_acl_name, $acl_table;
 

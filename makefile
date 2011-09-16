@@ -24,9 +24,9 @@ output: $(EYP_OUTPUT)
 
 graph: $(EYP_GRAPH)
 
-test: $(EYP_MODULE)
-	sh ${TEST_DIR}/testcase-generator.sh
-	prove -l ${TEST_DIR}/*.t 2>${TEST_DIR}/STDERR.dat
+test: $(EYP_MODULE) clean
+	perl ${TEST_DIR}/testcase-generator.pl
+	prove -l ${TEST_DIR}/*.t
 
 # suffix rules
 
