@@ -20,4 +20,3 @@ t/extacl.conf
 t/stdacl.conf
 t/testcase-generator.pl
 tool/eypgraph.pl
-META.yml

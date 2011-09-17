@@ -28,6 +28,7 @@
 ^check.*\.pl
 \.output$
 t\/[1-8]\d-.*\.t
+\.png$
 
 # Temp, old, bak and emacs backup files.
 ~$
