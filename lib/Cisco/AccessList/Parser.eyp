@@ -356,45 +356,45 @@ tcpudp_port_qualifier: NUMBER        # port number (0-65535)
 icmp_qualifier:
         | ADM_PROHIB
         | ALT_ADDR
-        | CONV_ERR 
-        | DOD_HOST_PROHIB  
-        | DOD_NET_PROHIB  
-        | ECHO 
-        | ECHO_REPLY 
-        | GEN_PARAM_PROB 
-        | HOST_ISOL 
-        | MOB_REDIR 
-        | NET_REDIR 
+        | CONV_ERR
+        | DOD_HOST_PROHIB
+        | DOD_NET_PROHIB
+        | ECHO
+        | ECHO_REPLY
+        | GEN_PARAM_PROB
+        | HOST_ISOL
+        | MOB_REDIR
+        | NET_REDIR
         | NET_TOS_REDIR
-        | NET_UNREACH 
-        | NET_UNKN 
-        | NO_ROOM_OPT 
-        | OPT_MISSING 
-        | PKT_TOO_BIG 
-        | PARAM_PROB 
-        | PORT_UNREACH 
-        | PREC_UNREACH 
-        | PROT_UNREACH 
-        | HOST_PREC_UNREACH 
-        | HOST_REDIR 
-        | HOST_TOS_REDIR 
-        | HOST_UNKN 
-        | HOST_UNREACH 
-        | INFO_REPLY 
-        | INFO_REQ 
+        | NET_UNREACH
+        | NET_UNKN
+        | NO_ROOM_OPT
+        | OPT_MISSING
+        | PKT_TOO_BIG
+        | PARAM_PROB
+        | PORT_UNREACH
+        | PREC_UNREACH
+        | PROT_UNREACH
+        | HOST_PREC_UNREACH
+        | HOST_REDIR
+        | HOST_TOS_REDIR
+        | HOST_UNKN
+        | HOST_UNREACH
+        | INFO_REPLY
+        | INFO_REQ
         | MASK_REPLY
-        | MASK_REQ 
-        | REASS_TIMEOUT 
-        | REDIR 
-        | ROUTER_ADV 
-        | ROUTER_SOL 
-        | SRC_QUENCH 
-        | SRC_ROUTE_FAIL 
-        | TIME_EXC 
-        | TIME_REPLY 
-        | TIME_REQ 
-        | TRACERT 
-        | TTL_EXC 
+        | MASK_REQ
+        | REASS_TIMEOUT
+        | REDIR
+        | ROUTER_ADV
+        | ROUTER_SOL
+        | SRC_QUENCH
+        | SRC_ROUTE_FAIL
+        | TIME_EXC
+        | TIME_REPLY
+        | TIME_REQ
+        | TRACERT
+        | TTL_EXC
         | UNREACH
         | icmp_numtype icmp_numcode
         ;
@@ -445,32 +445,32 @@ unary_operator: GT
 
 tcp_port_qualifier: NUMBER        # port number (0-65535)
         | BGP
-        | CHARGEN 
-        | CMD 
-        | DAYTIME 
-        | DISCARD 
-        | DOMAIN 
-        | ECHO 
-        | EXEC 
-        | FINGER 
+        | CHARGEN
+        | CMD
+        | DAYTIME
+        | DISCARD
+        | DOMAIN
+        | ECHO
+        | EXEC
+        | FINGER
         | FTP
-        | FTP_DATA 
-        | GOPHER 
-        | HOSTNAME 
-        | IDENT 
-        | IRC 
-        | KLOGIN 
-        | KSHELL 
-        | LOGIN 
+        | FTP_DATA
+        | GOPHER
+        | HOSTNAME
+        | IDENT
+        | IRC
+        | KLOGIN
+        | KSHELL
+        | LOGIN
         | LPD
-        | NNTP 
-        | PIM_AUTO_RP 
-        | POP2 
-        | POP3 
-        | SMTP 
-        | SUNRPC 
-        | SYSLOG 
-        | TACACS 
+        | NNTP
+        | PIM_AUTO_RP
+        | POP2
+        | POP3
+        | SMTP
+        | SUNRPC
+        | SYSLOG
+        | TACACS
         | TALK
         | TELNET
         | TIME
@@ -490,7 +490,7 @@ udp_port_qualifier: NUMBER        # port number (0-65535)
         | ISAKMP
         | MOBILE_IP
         | NAMESERVER
-        | NETBIOS_DGM 
+        | NETBIOS_DGM
         | NETBIOS_NS
         | NETBIOS_SS
         | NON500_ISAKMP
