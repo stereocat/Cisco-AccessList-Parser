@@ -27,6 +27,8 @@ my $builder = Module::Build->new(
     dist_abstract      => 'Cisco access-list parse',
     configure_requires => { 'Module::Build' => 0.36, },
     requires           => {
+        'Hash::Merge' => 0.12,
+        'Regexp::Common' => 2011000000,
         'Parse::Eyapp' => 1.181,
         'version'      => 0,
     },
