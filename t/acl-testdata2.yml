@@ -151,3 +151,38 @@ ext_acl_log_spec :
     valid : 1
   - data : "log-input logcookie"
     valid : 1
+tcp_flags :
+  - data : ''
+    valid : 1
+  - data : 'established'
+    valid : 1
+  - data: 'syn fin ack'
+    valid : 1
+  - data : 'acck established'
+    valid : 0
+precedence :
+  - data : ''
+    valid : 1
+  - data : 'precedence 3'
+    valid : 1
+  - data : 'precedence network'
+    valid : 1
+dscp :
+  - data : ''
+    valid : 1
+  - data : 'dscp af11'
+    valid : 1
+  - data : 'dscp 6'
+    valid : 1
+tos :
+  - data : ''
+    valid : 1
+  - data: 'tos 10'
+    valid : 1
+  - data: 'tos min-delay'
+    valid : 1
+time_range :
+  - data : ''
+    valid : 1
+  - data: 'time-range range_hoge'
+    valid : 1

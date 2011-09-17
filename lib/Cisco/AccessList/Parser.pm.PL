@@ -16,6 +16,9 @@ my $generate_cmd = join( q{ },
     "-m 'Cisco::AccessList::Parser'",
     "-o $module_file",
     "-v $grammer_file" );
+
+print "# Generate $module_file from $grammer_file\n";
 print "# $generate_cmd\n";
+
 system($generate_cmd)
     and die "Could not run: $generate_cmd";
