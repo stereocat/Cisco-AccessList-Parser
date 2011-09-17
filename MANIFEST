@@ -18,5 +18,4 @@ t/acl-testdata.yml
 t/acl-testdata2.yml
 t/extacl.conf
 t/stdacl.conf
-t/testcase-generator.pl
 tool/eypgraph.pl
