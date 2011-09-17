@@ -8,7 +8,14 @@ use warnings;
 
 my $grammer_file = $0;
 $grammer_file =~ s/\.pm\.PL/.eyp/g;
-my $generate_cmd = "eyapp -m 'Cisco::AccessList::Parser' -v $grammer_file";
+my $module_file = $0;
+$module_file =~ s/\.PL//g;
+
+my $generate_cmd = join( q{ },
+    "eyapp",
+    "-m 'Cisco::AccessList::Parser'",
+    "-o $module_file",
+    "-v $grammer_file" );
 print "# $generate_cmd\n";
 system($generate_cmd)
     and die "Could not run: $generate_cmd";

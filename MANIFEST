@@ -1,13 +1,16 @@
 Changes
-eypgraph.pl
 generate_tests.PL
 lib/Cisco/AccessList/Parser.eyp
+lib/Cisco/AccessList/Parser.pm
 lib/Cisco/AccessList/Parser.pm.PL
 lib/Cisco/AccessList/Parser.pod
 MANIFEST			This list of files
 MANIFEST.SKIP
-META.yml
 README
+t/00-envtest.t
+t/01-namedacl.t
+t/02-multiaclparse.t
+t/03-objgrp.t
 t/97-pod.t
 t/98-pod-coverage.t
 t/99-perlcritic.t
@@ -16,3 +19,5 @@ t/acl-testdata2.yml
 t/extacl.conf
 t/stdacl.conf
 t/testcase-generator.pl
+tool/eypgraph.pl
+META.yml

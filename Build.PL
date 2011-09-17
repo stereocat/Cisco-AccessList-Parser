@@ -3,17 +3,19 @@ use warnings;
 use Module::Build;
 
 my $builder = Module::Build->new(
-    module_name => 'Cisco::AccessList::Parser',
+    module_name    => 'Cisco::AccessList::Parser',
     dynamic_config => 1,
-    PL_files    => {
+    PL_files       => {
         'lib/Cisco/AccessList/Parser.pm.PL' =>
             'lib/Cisco/AccessList/Parser.pm',
         'generate_tests.PL' => [],
     },
-    license           => 'perl',
-    dist_author       => 'stereocat <stereocat@gmail.com>',
-    dist_version_from => 'lib/Cisco/AccessList/Parser.eyp',
-    requires          => {
+    license            => 'perl',
+    dist_author        => 'stereocat <stereocat@gmail.com>',
+    dist_version_from  => 'lib/Cisco/AccessList/Parser.eyp',
+    dist_abstract      => 'Cisco access-list parse',
+    configure_requires => { 'Module::Build' => 0.36, },
+    requires           => {
         'Parse::Eyapp' => 1.181,
         'version'      => 0,
     },

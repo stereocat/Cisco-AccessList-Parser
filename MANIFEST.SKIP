@@ -1,3 +1,5 @@
+# about MANIFEST, see also: ExtUtils::Manifest
+
 # Version control files and dirs.
 \bRCS\b
 \bCVS\b
@@ -15,19 +17,22 @@
 ^pm_to_blib*
 \.lwpcookies$
 ^cover_db
-^pod2htm*.tmp
+^pod2htm.*\.tmp
 ^Cisco-AccessList-Parser-*
 \.tar.gz$
+^META.yml$
 ^MYMETA.yml$
 
 # other generated files and test scripts
 ^makefile
 ^check.*\.pl
 \.output$
-t\/[0-8]\d-.*\.t
+t\/[1-8]\d-.*\.t
 
-# Temp, old and emacs backup files.
+# Temp, old, bak and emacs backup files.
 ~$
+\.temp$
+\.tmp$
 \.old$
 \.bak$
 ^#.*#$
