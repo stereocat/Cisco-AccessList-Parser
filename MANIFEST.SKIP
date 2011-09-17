@@ -1,0 +1,34 @@
+# Version control files and dirs.
+\bRCS\b
+\bCVS\b
+,v$
+\B\.svn\b
+\B\.git\b
+
+# Module::Build generate files/dirs
+^blib/
+^Makefile
+^Makefile.old
+^Build
+^Build.bat
+^_build*
+^pm_to_blib*
+\.lwpcookies$
+^cover_db
+^pod2htm*.tmp
+^Cisco-AccessList-Parser-*
+\.tar.gz$
+^MYMETA.yml$
+
+# other generated files and test scripts
+^makefile
+^check.*\.pl
+\.output$
+t\/[0-8]\d-.*\.t
+
+# Temp, old and emacs backup files.
+~$
+\.old$
+\.bak$
+^#.*#$
+^\.#

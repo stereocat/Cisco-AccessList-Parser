@@ -17,11 +17,7 @@ sub generate_case {
         die "Unknown field name: $test_field";
     }
 
-    # print "\n\n** $test_field / goto recursive **\n";
     my $later_test_case = generate_case( $field_data, $fieldseq );
-
-    # print "\n\n** $test_field / result of later fields case **\n";
-    # print Dumper $later_test_case;
 
     my $result = [];
     foreach my $field ( @{ $field_data->{$test_field} } ) {
@@ -29,15 +25,7 @@ sub generate_case {
         my $curr_valid = $field->{valid};
         my $curr_todo  = $field->{todo};
 
-        # print $curr_todo if defined $curr_todo;
-
-        # print "\n*** $test_field concate ***\n";
-        # print YAML::XS::Dump $field;
-
         foreach my $later_field (@$later_test_case) {
-
-            # print "\n**** $test_field get later field ****\n";
-            # print Dumper $later_field;
 
             my $later_data  = $later_field->{data};
             my $later_valid = $later_field->{valid};
@@ -131,7 +119,6 @@ __DATA__
 use strict;
 use warnings;
 use Test::Base;
-use Test::More;
 use Cisco::AccessList::Parser;
 
 my $p = Cisco::AccessList::Parser->new();
@@ -147,13 +134,13 @@ run {
     $p->set_yydata_input($data);
 
     if ( !( defined($todo) && length($todo) > 0 ) ) {
-        cmp_ok($p->is_acl_accepted(), '==', $valid, $data);
+        is( $p->is_acl_accepted(), $valid, $data );
     }
     else {
-      TODO: {
+    TODO: {
             local $TODO = $todo;
             $p->set_yydata_input($data);
-            cmp_ok($p->is_acl_accepted(), '==', $valid, $data);
+            is( $p->is_acl_accepted(), $valid, $data );
         }
     }
 };
