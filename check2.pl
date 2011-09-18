@@ -151,7 +151,7 @@ ip access-list extended FA0-IN
  deny   ip 224.0.0.0 31.255.255.255 any log
  deny   tcp any any eq 135 log
 !
-ip acess-list extended FA0-OUT
+ip access-list extended FA0-OUT
  deny   ip any 10.0.0.0 0.255.255.255 log
  permit icmp any any
  permit ip any any reflect iptraffic timeout 300
@@ -162,7 +162,7 @@ ip access-list extended FA0-IN
  deny   ip 224.0.0.0 31.255.255.255 any log
  deny   tcp any any eq 135 log
 !
-ip acess-list extended FA0-OUT
+ip access-list extended FA0-OUT
  deny   ip any 10.0.0.0 0.255.255.255 log
  permit icmp any any
  permit ip any any reflect iptraffic timeout 300
@@ -170,9 +170,6 @@ ip acess-list extended FA0-OUT
 !
 EOACL
 
-
-
-    
     my $input2 = << 'EOACL';
 ip access-list standard remote-ipv4
  permit 192.168.0.0 0.0.255.255
@@ -183,7 +180,7 @@ ip access-list extended FA0-IN
  deny   ip 224.0.0.0 31.255.255.255 any log
  deny   tcp any any eq 135 log
 !
-ip acess-list extended FA0-OUT
+ip access-list extended FA0-OUT
  deny   ip any 10.0.0.0 0.255.255.255 log
  permit icmp any any
  permit ip any any reflect iptraffic timeout 300
@@ -224,9 +221,9 @@ EOACL
 
     my $input6 = << 'EOACL';
 ip access-list standard remote-ipv4
- deny host 192.168.0.33 log
- permit 192.168.0.0 0.0.255.255
- deny   any hoge log
+ 10 deny host 192.168.0.33 log
+ 20 permit 192.168.0.0 0.0.255.255
+ 30 deny   any log
 EOACL
 
     my $input7 = << "EOACL";
@@ -273,7 +270,7 @@ object-group service Web_Service
  group-object other-list
 EOACL
 
-    my $test_data = $objgrp1;
+    my $test_data = $input2;
     my $aclparser;
     $aclparser = Cisco::AccessList::Parser->new();
     $aclparser->set_yydata_input($test_data);

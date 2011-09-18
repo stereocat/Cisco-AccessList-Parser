@@ -14,9 +14,10 @@ use version;
 
 our $VERSION = qv('0.0.1');
 
-my $acl_table; # initialized in is_acl_accepted()
+my $acl_table;
 my $curr_acl_name;
-
+my $objgrp_table;
+my $curr_objgrp_name;
 %}
 
 %start expr
@@ -43,16 +44,30 @@ ipacl: numbered_acl
 numbered_acl: STDACL std_acl
                 {
                     $curr_acl_name = $_[1];
-                    $acl_table->{$curr_acl_name} = []
-                        if ( !exists( $acl_table->{$curr_acl_name} ) );
-                    push @{ $acl_table->{$curr_acl_name} }, $_[2];
+                    if ( !exists( $acl_table->{$curr_acl_name} ) ) {
+                        $acl_table->{$curr_acl_name} = {
+                            "type"    => "numbered_standard",
+                            "entries" => [],
+                        };
+                    }
+                    push(
+                        @{ $acl_table->{$curr_acl_name}->{'entries'} },
+                        $_[2]
+                    );
                 }
         | EXTACL ext_acl
                 {
                     $curr_acl_name = $_[1];
-                    $acl_table->{$curr_acl_name} = []
-                        if ( !exists( $acl_table->{$curr_acl_name} ) );
-                    push @{$acl_table->{$curr_acl_name}},  $_[2];
+                    if ( !exists( $acl_table->{$curr_acl_name} ) ) {
+                        $acl_table->{$curr_acl_name} = {
+                            "type"    => "numbered_extended",
+                            "entries" => [],
+                        };
+                    }
+                    push(
+                        @{ $acl_table->{$curr_acl_name}->{'entries'} },
+                        $_[2]
+                    );
                 }
         ;
 
@@ -84,10 +99,10 @@ ext_acl: dynamic_spec ext_acl_body other_qualifier_list
 
 ext_acl_body: action ip_proto ip_spec ip_spec
                 {
-                    { "action" => $_[1],
-                      "protocol" => $_[2],
-                      "source" => $_[3],
-                      "destination" => $_[4],
+                    {   "action"      => $_[1],
+                        "protocol"    => $_[2],
+                        "source"      => $_[3],
+                        "destination" => $_[4],
                     };
                 }
         | action icmp_proto ip_spec ip_spec icmp_qualifier
@@ -172,39 +187,61 @@ named_acl: std_named_acl_header std_named_acl_entry_list
 std_named_acl_header: IPACL STANDARD STRING
                 {
                     $curr_acl_name = $_[3];
-                    $acl_table->{$curr_acl_name} = [];
-                    # push @$acl_table, $_[3];
+                    $acl_table->{$curr_acl_name} = {
+                        "type" => "named_standard",
+                        "entries" => [],
+                    };
                 }
         ;
 
 std_named_acl_entry_list:
         | std_named_acl_entry_list std_named_acl_entry
                 {
-                    push @{ $acl_table->{$curr_acl_name} }, "std_named_acl";
+                    push(
+                        @{ $acl_table->{$curr_acl_name}->{'entries'} },
+                        $_[2]
+                    );
                 }
         ;
 
 std_named_acl_entry: seq_number std_acl
+                {
+                    merge( { "sequence_number" => $_[1] }, $_[2] );
+                }
         | seq_number EVALUATE
+                {
+                    { "sequence_number" => $_[1], "evaluate" => $_[2] };
+                }
         ;
 
 ext_named_acl_header: IPACL EXTENDED STRING
                 {
                     $curr_acl_name = $_[3];
-                    $acl_table->{$curr_acl_name} = [];
-                    # push @$acl_table, $_[3];
+                    $acl_table->{$curr_acl_name} = {
+                        "type" => "named_extended",
+                        "entries" => [],
+                    };
                 }
         ;
 
 ext_named_acl_entry_list:
         | ext_named_acl_entry_list ext_named_acl_entry
                 {
-                    push @{ $acl_table->{$curr_acl_name} }, "ext_named_acl";
+                    push(
+                        @{ $acl_table->{$curr_acl_name}->{'entries'} },
+                        $_[2]
+                    );
                 }
         ;
 
 ext_named_acl_entry: seq_number ext_acl
+                {
+                    merge( { "sequence_number" => $_[1] }, $_[2] );
+                }
         | seq_number EVALUATE STRING
+                {
+                    { "sequence_number" => $_[1], "evaluate" => $_[2] };
+                }
         ;
 
 seq_number:
@@ -267,24 +304,49 @@ objgrp_network: objgrp_network_header objgrp_network_entry_list
 
 objgrp_network_header: OBJGRP NETWORK STRING
                 {
-                    $curr_acl_name = $_[3];
-                    $acl_table->{$curr_acl_name} = []
+                    $curr_objgrp_name = $_[3];
+                    $objgrp_table->{$curr_objgrp_name} = {
+                        "type" => "network",
+                        "entries" => [],
+                    };
                 }
         ;
 
 objgrp_network_entry_list:
         | objgrp_network_entry_list objgrp_network_entry
                 {
-                    push @{ $acl_table->{$curr_acl_name} }, "objgrp_nw";
+                    push(
+                        @{ $objgrp_table->{$curr_objgrp_name}->{'entries'} },
+                        $_[2]
+                    );
                 }
         ;
 
 objgrp_network_entry: DESCRIPTION
+                {
+                    { "description" => $_[1] };
+                }
         | HOST IPV4_ADDR
+                {
+                    { "ipv4_addr" => $_[2], "wildcard" => "0.0.0.0" };
+                }
         | IPV4_ADDR IPV4_ADDR
+                {
+                    { "ipv4_addr" => $_[1], "wildcard" => $_[2] };
+                }
         | IPV4_ADDR SLASH NUMBER # 0-32
+                {
+                    { "ipv4_addr" => $_[1], "mask_length" => $_[3] };
+                }
         | RANGE IPV4_ADDR IPV4_ADDR
+                {
+                    { "ipv4_addr1" => $_[2],
+                      "ipv4_addr2" => $_[3] };
+                }
         | GRPOBJ STRING # nested object-group
+                {
+                    { "object_group_network" => $_[2] };
+                }
         ;
 
 objgrp_service: objgrp_service_header objgrp_service_entry_list
@@ -292,52 +354,131 @@ objgrp_service: objgrp_service_header objgrp_service_entry_list
 
 objgrp_service_header: OBJGRP SERVICE STRING
                 {
-                    $curr_acl_name = $_[3];
-                    $acl_table->{$curr_acl_name} = []
+                    $curr_objgrp_name = $_[3];
+                    $objgrp_table->{$curr_objgrp_name} = {
+                        "type" => "service",
+                        "entries" => [],
+                    };
                 }
         ;
 
 objgrp_service_entry_list:
         | objgrp_service_entry_list objgrp_service_entry
                 {
-                    push @{ $acl_table->{$curr_acl_name} }, "objgrp_svc";
+                    push(
+                        @{  $objgrp_table->{$curr_objgrp_name}->{'entries'} },
+                        $_[2]
+                    );
                 }
         ;
 
 objgrp_service_entry: DESCRIPTION
         | ip_proto
+                {
+                    { "protocol" => $_[1] };
+                }
         | icmp_proto icmp_qualifier
+                {
+                    { "protocol" => $_[1],
+                      "icmp_qualifier" => $_[2] };
+                }
         | tcp_proto objgrp_tcp_proto
+                {
+                    { "protocol" => $_[1], "port" => $_[2] };
+                }
         | udp_proto objgrp_udp_proto
+                {
+                    { "protocol" => $_[1], "port" => $_[2] };
+                }
         | TCPUDP objgrp_tcpudp_proto
+                {
+                    { "protocol" => $_[1], "port" => $_[2] };
+                }
         | GRPOBJ STRING # nested object-group
+                {
+                    { "object_group_service" => $_[2] };
+                }
         ;
 
 objgrp_tcp_proto: objgrp_tcp_proto_spec
+                {
+                    merge ( { "origin" => "destination"}, $_[2] );
+                }
         | SOURCE objgrp_tcp_proto_spec
+                {
+                    merge ( { "origin" => "source"}, $_[2] );
+                }
         ;
 objgrp_tcp_proto_spec:
+                {
+                    { "port" => "eq any" };
+                }
         | unary_operator tcp_port_qualifier
+                {
+                    { "port" => join( q{ }, $_[1], $_[2] ) };
+                }
         | RANGE tcp_port_qualifier tcp_port_qualifier
+                {
+                    { "port" => join( q{ }, $_[1], $_[2], $_[3] ) };
+                }
         | tcp_port_qualifier
+                {
+                    { "port" => join( q{ }, "eq", $_[1] ) };
+                }
         ;
 
 objgrp_udp_proto: objgrp_udp_proto_spec
+                {
+                    merge ( { "origin" => "destination"}, $_[2] );
+                }
         | SOURCE objgrp_udp_proto_spec
+                {
+                    merge ( { "origin" => "source"}, $_[2] );
+                }
         ;
 objgrp_udp_proto_spec:
+                {
+                    { "port" => "eq any" };
+                }
         | unary_operator udp_port_qualifier
+                {
+                    { "port" => join( q{ }, $_[1], $_[2] ) };
+                }
         | RANGE udp_port_qualifier udp_port_qualifier
+                {
+                    { "port" => join( q{ }, $_[1], $_[2], $_[3] ) };
+                }
         | udp_port_qualifier
+                {
+                    { "port" => join( q{ }, "eq", $_[1] ) };
+                }
         ;
 
 objgrp_tcpudp_proto: objgrp_tcpudp_proto_spec
+                {
+                    merge ( { "origin" => "destination"}, $_[2] );
+                }
         | SOURCE objgrp_tcpudp_proto_spec
+                {
+                    merge ( { "origin" => "source"}, $_[2] );
+                }
         ;
 objgrp_tcpudp_proto_spec:
+                {
+                    { "port" => "eq any" };
+                }
         | unary_operator tcpudp_port_qualifier
+                {
+                    { "port" => join( q{ }, $_[1], $_[2] ) };
+                }
         | RANGE tcpudp_port_qualifier tcpudp_port_qualifier
+                {
+                    { "port" => join( q{ }, $_[1], $_[2], $_[3] ) };
+                }
         | tcpudp_port_qualifier
+                {
+                    { "port" => join( q{ }, "eq", $_[1] ) };
+                }
         ;
 
 tcpudp_port_qualifier: NUMBER        # port number (0-65535)
@@ -654,7 +795,7 @@ option_spec: ADD_EXT   # opt 147
 ###
 
 ## Lexer
-sub yylex {
+sub _yylex {
     my ($p) = shift;
 
     for ( $p->YYData->{INPUT} ) {
@@ -745,7 +886,7 @@ sub yylex {
         # return (TOKEN, [$1, num]); して番号に変換してしまおうと思った
         # が、'echo' が icmp to udp port num で token 重複していて分離
         # できない。'echo'だけ特例として reduce action 側で対応するか?
-       
+
         # ip_proto (convert to protocol number)
         m/\G(ahp)\s+/gc    and return ( 'AHP',    $1 );
         m/\G(eigrp)\s+/gc  and return ( 'EIGRP',  $1 );
@@ -998,7 +1139,7 @@ sub yylex {
 
         # empty
         # m/\G(\s*$)\s+/gc and return ( '', undef );
-           
+
         # string
         if ( /\G([A-Za-z()0-9,\'_=\-]+)/gc ) {
             # print "##### STRING: /$1/, ", pos(), "\n";
@@ -1009,7 +1150,7 @@ sub yylex {
 }
 
 ## Error Handler
-sub yyerror {
+sub _yyerror {
     my $self = shift;
     my($token)=$self->YYCurval;
     my($what)= $token ? $token : "end-of-input";
@@ -1038,17 +1179,18 @@ sub is_acl_accepted {
     my $debug = shift;
 
     $acl_table = {};
+    $objgrp_table = {};
     eval {
         $self->YYParse(
-            yylex   => \&yylex,
-            yyerror => \&yyerror,
+            yylex   => \&_yylex,
+            yyerror => \&_yyerror,
             yydebug => ( defined($debug) ? 0x1F : 0 ),
         );
     };
 
-    print Dumper $curr_acl_name, $acl_table if defined($debug);
+    print Dumper $acl_table, $objgrp_table if defined($debug);
 
-    return keys (%{$acl_table})
+    return keys( %{$acl_table} ) + keys( %{$objgrp_table} )
 }
 
 ## setter
