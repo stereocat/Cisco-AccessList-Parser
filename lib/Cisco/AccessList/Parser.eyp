@@ -13,8 +13,8 @@ use Data::Dumper; # for debug
 use version;
 
 our $VERSION = qv('0.0.1');
-my $parse_debug;
 
+my $parse_debug;
 my $acl_table;
 my $curr_acl_name;
 my $objgrp_table;
@@ -1177,6 +1177,7 @@ sub _yyerror {
 
 }
 
+## Parser
 sub parse {
     my $self  = shift;
     my %opts  = @_;
@@ -1226,5 +1227,8 @@ sub lex_check {
                 }
             }
         } while ( defined($token) && defined($val) );
+    }
+    else {
+        warn "Warning: Not Specified Parser Input Data";
     }
 }
