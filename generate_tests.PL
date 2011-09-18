@@ -50,8 +50,8 @@ sub generate_test_script {
     my $test_name            = shift;
     my $generate_test_script = shift;
     my $test_script_file     = file( $field_data_dir, $test_name . '.t' );
-    open my $tsfh, ">$test_script_file"
-        or die "Cannot open $test_script_file";
+    open my $tsfh, ">", $test_script_file
+        or die "Cannot open $test_script_file: $!";
 
     print $tsfh $code;
 
