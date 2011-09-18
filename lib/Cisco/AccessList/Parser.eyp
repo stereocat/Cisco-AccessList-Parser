@@ -89,7 +89,7 @@ std_acl_log_spec:
 
 ext_acl: dynamic_spec ext_acl_body other_qualifier_list
                 {
-                    { $_[2] };
+                    merge( { "dynamic" => $_[1] }, $_[2] );
                 }
         | REMARK
                 {
@@ -143,28 +143,28 @@ ext_acl_body: action ip_proto ip_spec ip_spec
 
 # protocols
 
-ip_proto: AHP          # 51
-        | EIGRP         # 88
-        | ESP           # 50
-        | GRE           # 47
-        | IGMP          # 2
+ip_proto: AHP    { $_[1]."(51)" }
+        | EIGRP  { $_[1]."(88)" }
+        | ESP    { $_[1]."(50)" }
+        | GRE    { $_[1]."(47)" }
+        | IGMP   { $_[1]."(2)" }
         | IGRP
-        | IP            # IS NOT 0! (no number)
-        | IPINIP        # 94
+        | IP     { $_[1]."()" } # IS NOT 0! (no number)
+        | IPINIP { $_[1]."(94)" }
         | NOS
-        | OSPF          # 89
-        | PCP           # 108
-        | PIM           # 103
-        | NUMBER        # ip protocol number (0-255)
+        | OSPF   { $_[1]."(89)" }
+        | PCP    { $_[1]."(108)" }
+        | PIM    { $_[1]."(103)" }
+        | NUMBER { "($_[1])" } # ip protocol number (0-255)
         ;
 
-icmp_proto: ICMP       # 1
+icmp_proto: ICMP { $_[1]."(1)" }
         ;
 
-tcp_proto: TCP         # 6
+tcp_proto: TCP   { $_[1]."(6)" }
         ;
 
-udp_proto: UDP         # 17
+udp_proto: UDP   { $_[1]."(17)" }
         ;
 
 tcp_srcdst_spec: objgrp_srcdst_spec tcp_port_spec
@@ -1207,7 +1207,7 @@ sub lex_check {
 
     my ( $token, $val );
     do {
-        ( $token, $val ) = $self->yylex();
+        ( $token, $val ) = $self->_yylex();
         if ( defined($val) ) {
             if ( ref($val) eq 'ARRAY' ) {
                 print( ":: $token, [",
