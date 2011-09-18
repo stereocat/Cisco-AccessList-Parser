@@ -6,7 +6,7 @@ use Test::More;
 use Parse::Eyapp;
 use Cisco::AccessList::Parser;
 
-plan (tests => 6);
+plan( tests => 6 );
 my $p = Cisco::AccessList::Parser->new();
 
 my $data;
@@ -19,8 +19,7 @@ access-list 10 deny   any log
 access-list 99 permit 192.168.0.0 0.0.255.255
 access-list 99 deny   any log
 EOD
-$p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 4, "multiple std acl");
+cmp_ok( $p->parse( 'input' => $data ), '==', 4, "multiple std acl" );
 
 $data = << 'EOD';
 access-list 100 remark DNS Exempt
@@ -41,8 +40,7 @@ access-list 110 permit ip 192.168.0.0 0.0.255.255 any
 access-list 120 permit ip 192.168.0.0 0.0.255.255 any
 access-list 120 permit ip any any log
 EOD
-$p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 3, "multiple ext acl");
+cmp_ok( $p->parse( 'input' => $data ), '==', 3, "multiple ext acl" );
 
 $data = << 'EOD';
 access-list 1 permit 192.168.0.0 0.0.255.255
@@ -69,9 +67,7 @@ access-list 110 permit ip 192.168.0.0 0.0.255.255 any
 access-list 120 permit ip 192.168.0.0 0.0.255.255 any
 access-list 120 permit ip any any log
 EOD
-$p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 7, "multiple ext/std acl mix");
-
+cmp_ok( $p->parse( 'input' => $data ), '==', 7, "multiple ext/std acl mix" );
 
 $data = << 'EOD';
 ip access-list standard remote-ipv4
@@ -85,8 +81,7 @@ ip access-list standard test-acl
  deny   any log
 !
 EOD
-$p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 2, "multiple named-std-acl");
+cmp_ok( $p->parse( 'input' => $data ), '==', 2, "multiple named-std-acl" );
 
 $data = << 'EOD';
 ip access-list extended FA0-IN
@@ -101,8 +96,7 @@ ip access-list extended FA0-OUT
  deny   ip any any log
 !
 EOD
-$p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 2, "multiple named-ext-acl");
+cmp_ok( $p->parse( 'input' => $data ), '==', 2, "multiple named-ext-acl" );
 
 $data = << 'EOD';
 ip access-list extended FA0-IN
@@ -128,6 +122,6 @@ ip access-list extended FA1-OUT
  deny   ip any any log
 !
 EOD
-$p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 4, "multiple named-ext/std-acl mix");
+cmp_ok( $p->parse( 'input' => $data ),
+    '==', 4, "multiple named-ext/std-acl mix" );
 

@@ -14,8 +14,8 @@ my $data;
 $data = << 'EOD';
 ip access-list extended FA0-IN
 EOD
-$p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 1, "named-ext-acl: header only (implicit deny)");
+cmp_ok( $p->parse( 'input' => $data ),
+    '==', 1, "named-ext-acl: header only (implicit deny)" );
 
 $data = << 'EOD';
 ip access-list extended FA0-IN
@@ -60,8 +60,7 @@ ip access-list extended FA0-IN
  deny   ip any any log
 !
 EOD
-$p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 1, "Normal named-ext-acl");
+cmp_ok($p->parse( 'input' => $data ), '==', 1, "Normal named-ext-acl");
 
 
 $data = << 'EOD';
@@ -98,14 +97,12 @@ ip acess-list extended FA0-OUT
  permit ip any any reflect iptraffic timeout 300
  deny   ip any any log
 EOD
-$p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 0, "named-ext-acl: header error");
+cmp_ok($p->parse( 'input' => $data ), '==', 0, "named-ext-acl: header error");
 
 $data = << 'EOD';
 ip access-list standard remote-ipv4
 EOD
-$p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 1, "named-std-acl: header only (implicit deny)");
+cmp_ok($p->parse( 'input' => $data ), '==', 1, "named-std-acl: header only (implicit deny)");
 
 $data = << 'EOD';
 ip access-list standard remote-ipv4
@@ -113,8 +110,7 @@ ip access-list standard remote-ipv4
  permit 192.168.0.0 0.0.255.255
  deny   any log
 EOD
-$p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 1, "normal named-std-acl");
+cmp_ok($p->parse( 'input' => $data ), '==', 1, "normal named-std-acl");
 
 $data = << 'EOD';
 ip access-list standard remote-ipv4
@@ -122,5 +118,4 @@ ip access-list standard remote-ipv4
  permit 192.168.0.0 0.0.255.255
  deny   any any log
 EOD
-$p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 0, "named-std-acl: body error");
+cmp_ok($p->parse( 'input' => $data ), '==', 0, "named-std-acl: body error");

@@ -13,23 +13,18 @@ use Cisco::AccessList::Parser;
 
 sub line_by_line_test {
     my $aclparser = Cisco::AccessList::Parser->new();
+    my $debug = 0x1F;
     print "? ";
     while (<>) {
         last if m{^q(?:uit)?};
-        $aclparser->set_yydata_input($_);
-        parse_run($aclparser);
-        $aclparser->set_yydata_input($_);
-        $aclparser->lex_check();
+
+        my $t;
+        $t = $aclparser->parse('debug' => $debug, 'input' => $_);
+        print $t, "\n";
+
+        $aclparser->lex_check('input' => $_);
         print "\n? ";
     }
-}
-
-sub parse_run {
-    my $aclparser = shift;
-    my $t;
-    my $debug = 0x1F;
-    $t = $aclparser->is_acl_accepted($debug);
-    print $t, "\n";
 }
 
 line_by_line_test();

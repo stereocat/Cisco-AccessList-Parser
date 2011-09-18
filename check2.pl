@@ -271,22 +271,13 @@ object-group service Web_Service
 EOACL
 
     my $test_data = $input2;
-    my $aclparser;
-    $aclparser = Cisco::AccessList::Parser->new();
-    $aclparser->set_yydata_input($test_data);
-    parse_run($aclparser);
-    print "==================\n";
-    $aclparser = Cisco::AccessList::Parser->new();
-    $aclparser->set_yydata_input($test_data);
-    $aclparser->lex_check();
-}
-
-sub parse_run {
-    my $aclparser = shift;
-    my $t;
+    my $aclparser = Cisco::AccessList::Parser->new();
     my $debug = 0x1F;
-    $t = $aclparser->is_acl_accepted($debug);
+    my $t;
+    $t = $aclparser->parse('input' => $test_data, 'debug' => $debug);
     print "RESULT: ", $t, "\n";
+    print "==================\n";
+    $aclparser->lex_check('input' => $test_data);
 }
 
 multi_line_test();

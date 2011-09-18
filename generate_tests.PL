@@ -132,16 +132,13 @@ run {
     my $valid = $block->valid();
     my $todo  = $block->todo();
 
-    $p->set_yydata_input($data);
-
     if ( !( defined($todo) && length($todo) > 0 ) ) {
-        is( $p->is_acl_accepted(), $valid, $data );
+        is( $p->parse( 'input' => $data ), $valid, $data );
     }
     else {
     TODO: {
             local $TODO = $todo;
-            $p->set_yydata_input($data);
-            is( $p->is_acl_accepted(), $valid, $data );
+            is( $p->parse( 'input' => $data ), $valid, $data );
         }
     }
 };

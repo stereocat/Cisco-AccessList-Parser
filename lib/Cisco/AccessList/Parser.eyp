@@ -13,6 +13,7 @@ use Data::Dumper; # for debug
 use version;
 
 our $VERSION = qv('0.0.1');
+my $parse_debug;
 
 my $acl_table;
 my $curr_acl_name;
@@ -1157,67 +1158,73 @@ sub _yyerror {
     my @expected = $self->YYExpect();
 
     if ( defined($curr_acl_name) ) {
-        # print STDERR
-        #     "ERROR: Syntax error in ACL:$curr_acl_name, near: /$what/.\n",
-        #     "Expected one of these tokens: @expected\n";
+        print STDERR
+            "ERROR: Syntax error in ACL:$curr_acl_name, near: /$what/.\n",
+            "Expected one of these tokens: @expected\n"
+            if ( $parse_debug > 0 );
 
         # delete last acl
         delete $acl_table->{$curr_acl_name};
     }
     else {
-        # print STDERR
-        #     "ERROR: Syntax error, near: /$what/.\n",
-        #     "Expected one of these tokens: @expected\n";
+        print STDERR
+            "ERROR: Syntax error, near: /$what/.\n",
+            "Expected one of these tokens: @expected\n"
+            if ( $parse_debug > 0 );
     }
     # print "Parse Error in $curr_acl_name, delete from list\n";
     # print Dumper $curr_acl_name, $acl_table;
 
 }
 
-sub is_acl_accepted {
+sub parse {
     my $self  = shift;
-    my $debug = shift;
+    my %opts  = @_;
 
-    $acl_table = {};
-    $objgrp_table = {};
-    eval {
-        $self->YYParse(
-            yylex   => \&_yylex,
-            yyerror => \&_yyerror,
-            yydebug => ( defined($debug) ? 0x1F : 0 ),
-        );
-    };
+    $parse_debug = exists( $opts{'debug'} ) ? $opts{'debug'} : 0;
 
-    print Dumper $acl_table, $objgrp_table if defined($debug);
+    if ( exists( $opts{'input'} ) ) {
+        $self->YYData->{INPUT} = $opts{'input'} . "\r";
+
+        $acl_table    = {};
+        $objgrp_table = {};
+        eval {
+            $self->YYParse(
+                yylex   => \&_yylex,
+                yyerror => \&_yyerror,
+                yydebug => $parse_debug,
+            );
+        };
+        print Dumper $acl_table, $objgrp_table if $parse_debug > 0;
+    }
+    else {
+        warn "Warning: Not Specified Parser Input Data";
+    }
 
     return keys( %{$acl_table} ) + keys( %{$objgrp_table} )
-}
-
-## setter
-sub set_yydata_input {
-    my $self  = shift;
-    my $input = shift;
-    $input = $input . "\r";
-    $self->YYData->{INPUT} = $input;
 }
 
 ## lexer Checker
 sub lex_check {
     my $self = shift;
+    my %opts = @_;
 
-    my ( $token, $val );
-    do {
-        ( $token, $val ) = $self->_yylex();
-        if ( defined($val) ) {
-            if ( ref($val) eq 'ARRAY' ) {
-                print( ":: $token, [",
-                    defined( $val->[0] ) ? $val->[0] : "undef",
-                    ",", $val->[1]       ? $val->[1] : "undef", "]\n" );
+    if ( exists( $opts{'input'} ) ) {
+        $self->YYData->{INPUT} = $opts{'input'} . "\r";
+
+        my ( $token, $val );
+        do {
+            ( $token, $val ) = $self->_yylex();
+            if ( defined($val) ) {
+                if ( ref($val) eq 'ARRAY' ) {
+                    print( ":: $token, [",
+                           defined( $val->[0] ) ? $val->[0] : "undef",
+                           ",", $val->[1]       ? $val->[1] : "undef", "]\n" );
+                }
+                else {
+                    print "// $token, /$val/\n";
+                }
             }
-            else {
-                print "// $token, /$val/\n";
-            }
-        }
-    } while ( defined($token) && defined($val) );
+        } while ( defined($token) && defined($val) );
+    }
 }
-

@@ -6,7 +6,7 @@ use Test::More;
 use Parse::Eyapp;
 use Cisco::AccessList::Parser;
 
-plan (tests => 3);
+plan( tests => 3 );
 my $p = Cisco::AccessList::Parser->new();
 
 my $data;
@@ -22,8 +22,8 @@ object-group network SMTP_Server
  range 192.168.3.2 192.168.3.200
 !
 EOD
-$p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 1, "single network object-group");
+cmp_ok( $p->parse( 'input' => $data ),
+    '==', 1, "single network object-group" );
 
 $data = << 'EOD';
 object-group service Web_Service
@@ -36,8 +36,8 @@ object-group service Web_Service
  tcp-udp range 2000 2005
  group-object other-list
 EOD
-$p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 1, "single service object-group");
+cmp_ok( $p->parse( 'input' => $data ),
+    '==', 1, "single service object-group" );
 
 $data = << 'EOD';
 object-group network SMTP_Server
@@ -64,6 +64,6 @@ object-group service Service_2
  tcp-udp source range 2000 2005
  group-object other-list
 EOD
-$p->set_yydata_input($data);
-cmp_ok($p->is_acl_accepted(), '==', 4, "multiple service/network object-gropu mix");
+cmp_ok( $p->parse( 'input' => $data ),
+    '==', 4, "multiple service/network object-gropu mix" );
 
