@@ -34,7 +34,8 @@ my $builder = Module::Build->new(
     },
     build_requires => {
         'YAML'       => 0,
-        'Test::More' => 0.92,
+        # 'Test::Most' => 0,
+        'Test::More' => 0,
         'Test::Base' => 0.60,
     },
     add_to_cleanup => ['Cisco-AccessList-Parser-*'],

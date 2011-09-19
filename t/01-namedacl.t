@@ -10,12 +10,13 @@ plan (tests => 6);
 my $p = Cisco::AccessList::Parser->new();
 
 my $data;
+my ($acl, $objgrp);
 
 $data = << 'EOD';
 ip access-list extended FA0-IN
 EOD
-cmp_ok( $p->parse( 'input' => $data ),
-    '==', 1, "named-ext-acl: header only (implicit deny)" );
+( $acl, $objgrp ) = $p->parse( 'input' => $data );
+cmp_ok( keys(%$acl), '==', 1, "named-ext-acl: header only (implicit deny)" );
 
 $data = << 'EOD';
 ip access-list extended FA0-IN
@@ -60,7 +61,8 @@ ip access-list extended FA0-IN
  deny   ip any any log
 !
 EOD
-cmp_ok($p->parse( 'input' => $data ), '==', 1, "Normal named-ext-acl");
+( $acl, $objgrp ) = $p->parse( 'input' => $data );
+cmp_ok( keys(%$acl), '==', 1, "Normal named-ext-acl" );
 
 
 $data = << 'EOD';
@@ -97,12 +99,14 @@ ip acess-list extended FA0-OUT
  permit ip any any reflect iptraffic timeout 300
  deny   ip any any log
 EOD
-cmp_ok($p->parse( 'input' => $data ), '==', 0, "named-ext-acl: header error");
+( $acl, $objgrp ) = $p->parse( 'input' => $data );
+cmp_ok( keys(%$acl), '==', 0, "named-ext-acl: header error");
 
 $data = << 'EOD';
 ip access-list standard remote-ipv4
 EOD
-cmp_ok($p->parse( 'input' => $data ), '==', 1, "named-std-acl: header only (implicit deny)");
+( $acl, $objgrp ) = $p->parse( 'input' => $data );
+cmp_ok( keys(%$acl), '==', 1, "named-std-acl: header only (implicit deny)");
 
 $data = << 'EOD';
 ip access-list standard remote-ipv4
@@ -110,7 +114,8 @@ ip access-list standard remote-ipv4
  permit 192.168.0.0 0.0.255.255
  deny   any log
 EOD
-cmp_ok($p->parse( 'input' => $data ), '==', 1, "normal named-std-acl");
+( $acl, $objgrp ) = $p->parse( 'input' => $data );
+cmp_ok( keys(%$acl), '==', 1, "normal named-std-acl");
 
 $data = << 'EOD';
 ip access-list standard remote-ipv4
@@ -118,4 +123,5 @@ ip access-list standard remote-ipv4
  permit 192.168.0.0 0.0.255.255
  deny   any any log
 EOD
-cmp_ok($p->parse( 'input' => $data ), '==', 0, "named-std-acl: body error");
+( $acl, $objgrp ) = $p->parse( 'input' => $data );
+cmp_ok( keys(%$acl), '==', 0, "named-std-acl: body error");

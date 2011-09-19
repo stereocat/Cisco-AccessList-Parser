@@ -1202,7 +1202,7 @@ sub parse {
         warn "Warning: Not Specified Parser Input Data";
     }
 
-    return keys( %{$acl_table} ) + keys( %{$objgrp_table} )
+    return ( $acl_table, $objgrp_table );
 }
 
 ## lexer Checker

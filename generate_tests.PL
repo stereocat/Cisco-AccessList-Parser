@@ -131,15 +131,18 @@ run {
     my $data  = $block->data();
     my $valid = $block->valid();
     my $todo  = $block->todo();
+    my ($acl, $objgrp);
+
+    ( $acl, $objgrp ) = $p->parse( 'input' => $data );
 
     if ( !( defined($todo) && length($todo) > 0 ) ) {
-        is( $p->parse( 'input' => $data ), $valid, $data );
+        is( keys(%$acl) + keys(%$objgrp), $valid, $data );
     }
     else {
-    TODO: {
-            local $TODO = $todo;
-            is( $p->parse( 'input' => $data ), $valid, $data );
-        }
+      TODO: {
+        local $TODO = $todo;
+        is( keys(%$acl) + keys(%$objgrp), $valid, $data );
+      }
     }
 };
 __DATA__
