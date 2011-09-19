@@ -56,9 +56,9 @@ sub generate_test_script {
     print $tsfh $code;
 
     foreach my $testcase (@$generate_test_script) {
-        my $data   = $testcase->{'data'};
-        my $todo   = defined( $testcase->{'todo'} ) ? $testcase->{'todo'} : 0;
-        my $valid  = $testcase->{'valid'};
+        my $data  = $testcase->{'data'};
+        my $todo  = defined( $testcase->{'todo'} ) ? $testcase->{'todo'} : "";
+        my $valid = $testcase->{'valid'};
         my $record = <<"EOL";
 ===
 --- data: $data
@@ -120,28 +120,46 @@ __DATA__
 use strict;
 use warnings;
 use Test::Base;
+use Test::Warn;
 use Cisco::AccessList::Parser;
 
 my $p = Cisco::AccessList::Parser->new();
 
 plan tests => 1 * blocks;
 
-run {
+sub check_acl {
+    my $p = shift;
     my $block = shift;
+
     my $data  = $block->data();
     my $valid = $block->valid();
     my $todo  = $block->todo();
     my ($acl, $objgrp);
 
-    ( $acl, $objgrp ) = $p->parse( 'input' => $data );
+    if($valid > 0) {
+        ( $acl, $objgrp ) = $p->parse( 'input' => $data );
+        is( keys(%$acl) + keys(%$objgrp), $valid, $data );
+    }
+    else {
+        warnings_exist {
+            ( $acl, $objgrp ) = $p->parse( 'input' => $data );
+        } qr/WARNING:/, $data;
+    }
+}
+
+run {
+    my $block = shift;
+    my $data  = $block->data();
+    my $valid = $block->valid();
+    my $todo  = $block->todo();
 
     if ( !( defined($todo) && length($todo) > 0 ) ) {
-        is( keys(%$acl) + keys(%$objgrp), $valid, $data );
+        check_acl($p, $block);
     }
     else {
       TODO: {
         local $TODO = $todo;
-        is( keys(%$acl) + keys(%$objgrp), $valid, $data );
+        check_acl($p, $block);
       }
     }
 };

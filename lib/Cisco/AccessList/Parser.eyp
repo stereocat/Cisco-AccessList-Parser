@@ -9,6 +9,7 @@ use strict;
 use warnings;
 use Regexp::Common qw/number net/;
 use Hash::Merge qw/merge/;
+use Carp qw/croak/;
 use Data::Dumper; # for debug
 use version;
 
@@ -156,7 +157,17 @@ ip_proto: AHP    { $_[1]."(51)" }
         | OSPF   { $_[1]."(89)" }
         | PCP    { $_[1]."(108)" }
         | PIM    { $_[1]."(103)" }
-        | NUMBER { "($_[1])" } # ip protocol number (0-255)
+        | NUMBER.num # ip protocol number (0-255)
+                {
+                    my %set = map {$_ => 1} qw( 1 6 17 ); 
+                    if ( 0 <= $num && $num <= 255 && !exists( $set{$num} ) ) {
+                        return $num;
+                    }
+                    else {
+                        warn "WARNING: Protocol:$num is of-of-range (0-255)";
+                        return $num;
+                    }
+                }
         ;
 
 icmp_proto: ICMP { $_[1]."(1)" }
@@ -1153,24 +1164,22 @@ sub _yylex {
 ## Error Handler
 sub _yyerror {
     my $self = shift;
-    my($token)=$self->YYCurval;
-    my($what)= $token ? $token : "end-of-input";
+    my ($token) = $self->YYCurval;
+    my ($what) = $token ? $token : "end-of-input";
     my @expected = $self->YYExpect();
 
     if ( defined($curr_acl_name) ) {
-        print STDERR
-            "ERROR: Syntax error in ACL:$curr_acl_name, near: /$what/.\n",
-            "Expected one of these tokens: @expected\n"
-            if ( $parse_debug > 0 );
+        warn
+            "WARNING: Syntax error in ACL:$curr_acl_name, near: >$what<.\n",
+            "Expected one of these tokens: @expected\n";
 
         # delete last acl
         delete $acl_table->{$curr_acl_name};
     }
     else {
-        print STDERR
-            "ERROR: Syntax error, near: /$what/.\n",
-            "Expected one of these tokens: @expected\n"
-            if ( $parse_debug > 0 );
+        warn
+            "WARNING: Syntax error, near: >$what<.\n",
+            "Expected one of these tokens: @expected\n";
     }
     # print "Parse Error in $curr_acl_name, delete from list\n";
     # print Dumper $curr_acl_name, $acl_table;
@@ -1196,7 +1205,10 @@ sub parse {
                 yydebug => $parse_debug,
             );
         };
-        print Dumper $acl_table, $objgrp_table if $parse_debug > 0;
+        # if ( $parse_debug > 0 ) {
+        #     print "\n## parse() debug\n";
+        #     print Dumper $acl_table, $objgrp_table;
+        # }
     }
     else {
         warn "Warning: Not Specified Parser Input Data";

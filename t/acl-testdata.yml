@@ -54,7 +54,7 @@ dynamic_spec :
   - data : 'dynamic dynamicname'
     valid : 1
   - data : 'dynamic dynamicname timeout 3'
-    valid : 1        
+    valid : 1
   - data : 'dynamic dynamicname timeout'
     valid : 0
     msg : "missing timeout <min>"
@@ -87,8 +87,8 @@ ip_proto :
     msg : 'upper bound'
   - data : '256'
     valid : 0
-    msg : 'out of range'
-    todo : "not implemented, yet."
+    # msg : 'out of range'
+    # todo : "not implemented: ip proto range check."
 ip_spec1 :
   - data : 'any'
     valid : 1
@@ -135,11 +135,11 @@ icmp_qualifier :
   - data : "256 0"
     valid : 0
     msg : "type num: out of range"
-    todo : "not implemented, yet."
+    todo : "not implemented: icmp_qualifier type num check"
   - data : "0 256"
     valid : 0
     msg : "code num: out of range"
-    todo : "not implemented, yet."
+    todo : "not implemented: icmp_qualifier code num check"
 std_acl_log_spec :
   - data : ""
     valid : 1

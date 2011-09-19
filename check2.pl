@@ -11,8 +11,7 @@ use Cisco::AccessList::Parser;
 
 #sub TERMINAL::info { $_[0]{attr} }
 
-sub multi_line_test {
-    my $input = << "EOACL";
+my $input = << "EOACL";
 ip access-list extended FA0-IN
  deny   ip 10.0.0.0 0.255.255.255 any log
  deny   ip 172.16.0.0 0.15.255.255 any log
@@ -57,7 +56,7 @@ ip access-list extended FA0-IN
  deny   ip any any log
 EOACL
 
-    my $multiple_std_acl = << 'EOACL';
+my $multiple_std_acl = << 'EOACL';
 access-list 1 permit 192.168.0.0 0.0.255.255
 access-list 1 deny   any log
 access-list 9 permit 192.168.0.0 0.0.255.255
@@ -66,7 +65,7 @@ access-list 99 permit 192.168.0.0 0.0.255.255
 access-list 99 deny   any log
 EOACL
 
-    my $multiple_ext_acl = << 'EOACL';
+my $multiple_ext_acl = << 'EOACL';
 access-list 100 remark DNS Exempt
 access-list 100 deny   udp 122.219.206.8 0.0.0.7 any eq domain
 access-list 100 deny   tcp 122.219.206.8 0.0.0.7 any eq domain
@@ -86,8 +85,7 @@ access-list 120 permit ip 192.168.0.0 0.0.255.255 any
 access-list 120 permit tcp any any log
 EOACL
 
-
-    my $multiple_std_ext_acl_mix = << 'EOACL';
+my $multiple_std_ext_acl_mix = << 'EOACL';
 access-list 1 permit 192.168.0.0 0.0.255.255
 access-list 1 deny   any log
 access-list 9 permit 192.168.0.0 0.0.255.255
@@ -115,7 +113,7 @@ access-list 120 permit ip 192.168.0.0 0.0.255.255 any
 access-list 120 permit tcp any any log
 EOACL
 
-    my $multiple_named_std_acl = << 'EOACL';
+my $multiple_named_std_acl = << 'EOACL';
 ip access-list standard remote-ipv4
  permit 192.168.0.0 0.0.255.255
  remark deny all
@@ -129,7 +127,7 @@ ip access-list standard test-acl
 !
 EOACL
 
-    my $multiple_named_ext_acl = << 'EOACL';
+my $multiple_named_ext_acl = << 'EOACL';
 !
 ip access-list extended FA0-IN
  deny   ip 169.254.0.0 0.0.255.255 any log
@@ -144,8 +142,7 @@ ip access-list extended FA0-OUT
 !
 EOACL
 
-
-    my $multiple_named_ext_std_acl_mix = << 'EOACL';
+my $multiple_named_ext_std_acl_mix = << 'EOACL';
 ip access-list extended FA0-IN
  deny   ip 169.254.0.0 0.0.255.255 any log
  deny   ip 224.0.0.0 31.255.255.255 any log
@@ -170,7 +167,7 @@ ip access-list extended FA0-OUT
 !
 EOACL
 
-    my $input2 = << 'EOACL';
+my $input2 = << 'EOACL';
 ip access-list standard remote-ipv4
  permit 192.168.0.0 0.0.255.255
  deny   any log
@@ -188,7 +185,7 @@ ip access-list extended FA0-OUT
 !
 EOACL
 
-    my $input3 = << 'EOACL';
+my $input3 = << 'EOACL';
 access-list 1 permit 192.168.0.0 0.0.255.255
 access-list 1 deny   any log
 access-list 100 remark DNS Exempt
@@ -208,7 +205,7 @@ access-list 110 remark SPLIT_VPN
 access-list 110 permit ip 192.168.0.0 0.0.255.255 any
 EOACL
 
-    my $input5 = << 'EOACL';
+my $input5 = << 'EOACL';
 access-list 130 deny   ip any any log
 access-list 130 remark SPLIT_VPN
 access-list 130 permit ip 192.168.0.0 0.0.255.255 any
@@ -219,14 +216,14 @@ access-list 100 deny   ip any any log
 access-list 100 permit ip 192.168.0.0 0.0.255.255 any
 EOACL
 
-    my $input6 = << 'EOACL';
+my $input6 = << 'EOACL';
 ip access-list standard remote-ipv4
  10 deny host 192.168.0.33 log
  20 permit 192.168.0.0 0.0.255.255
  30 deny   any log
 EOACL
 
-    my $input7 = << "EOACL";
+my $input7 = << "EOACL";
 ip access-list extended FA0-IN
  deny   tcp any any eq 1433 log
  remark ip vpn
@@ -235,21 +232,21 @@ ip access-list extended FA0-IN
  deny   ip any any log
 EOACL
 
-    my $input8 = << "EOACL";
+my $input8 = << "EOACL";
 ip access-list standard remote-ipv4
  deny host 192.168.0.33 log
  permit 192.168.0.0 0.0.255.255
  deny   any any log
 EOACL
 
-    my $input9 = << "EOACL";
+my $input9 = << "EOACL";
 ip access-list standard remote-ipv4
  deny host 192.168.0.33 log
  permit 192.168.0.0 0.0.255.255
  deny   any log
 EOACL
 
-    my $objgrp1 = << "EOACL";
+my $objgrp1 = << "EOACL";
 object-group network SMTP_Server
  description ISP SMTP server
  host 192.168.0.2
@@ -270,15 +267,12 @@ object-group service Web_Service
  group-object other-list
 EOACL
 
-    my $test_data = $input2;
-    my $aclparser = Cisco::AccessList::Parser->new();
-    my $debug = 0x1F;
-    my $t;
-    $t = $aclparser->parse('input' => $test_data, 'debug' => $debug);
-    print "RESULT: ", $t, "\n";
-    print "==================\n";
-    $aclparser->lex_check('input' => $test_data);
-}
-
-multi_line_test();
+my $test_data = $input2;
+my $aclparser = Cisco::AccessList::Parser->new();
+my $debug     = 0x1F;
+my ( $acl, $objgrp )
+    = $aclparser->parse( 'input' => $test_data, 'debug' => $debug );
+print "RESULT: ", ( keys(%$acl) + keys(%$objgrp) ), "\n";
+print "==================\n";
+$aclparser->lex_check( 'input' => $test_data );
 
