@@ -2,52 +2,65 @@ acl :
   - data : 'access-list'
     valid : 1
   - data : 'access-lsit'
+    # "typo <access-list>"
     valid : 0
-    msg : "typo <access-list>"
+    expected_msg : "/WARNING/"
 stdacl_num :
   - data : "0"
+    # "area1 lower out of range"
     valid : 0
-    msg : "area1 lower out of range"
+    expected_msg : "/WARNING/"
   - data : "1"
+    # "area1 lower-bound"
     valid : 1
-    msg : "area1 lower-bound"
+    struct : "{ 1: { entries: [ ##entry## ], type: numbered_standard } }"
   - data : "99"
+    # "area1 upper-bound"
     valid : 1
-    msg : "area1 upper-bound"
+    struct : "{ 99: { entries: [ ##entry## ], type: numbered_standard } }"
   - data : "1299"
+    # "area2 lower out of range"
     valid : 0
-    msg : "area2 lower out of range"
+    expected_msg : "/WARNING/"
   - data : "1300"
+    # "area2 lower-bound"
     valid : 1
-    msg : "area2 lower-bound"
+    struct : "{ 1300: { entries: [ ##entry## ], type: numbered_standard } }"
   - data : "1999"
+    # "area2 upper-bound"
     valid : 1
-    msg : "area2 upper-bound"
+    struct : "{ 1999: { entries: [ ##entry## ], type: numbered_standard } }"
 extacl_num :
   - data : "100"
     valid : 1
-    msg : "area1 lower-bound"
+    expected_msg : "/WARNING/"
+    # "area1 lower-bound"
   - data : "199"
     valid : 1
-    msg : "area1 upper-bound"
+    expected_msg : "/WARNING/"
+    # "area1 upper-bound"
   # - data : "99"
   #   valid : 0
-  #   msg : "area1 lower out of range"
+  #   expected_msg : "area1 lower out of range"
   - data : "200"
     valid : 0
-    msg : "area1 upper out of range"
+    expected_msg : "/WARNING/"
+    # "area1 upper out of range"
   - data : "2000"
     valid : 1
-    msg : "area2 lower-bound"
+    expected_msg : "/WARNING/"
+    # "area2 lower-bound"
   - data : "2699"
     valid : 1
-    msg : "area2 upper-bound"
+    expected_msg : "/WARNING/"
+    # "area2 upper-bound"
   # - data : "1999"
   #   valid : 0
-  #   msg : "area2 lower out of range"
+  #   expected_msg : "area2 lower out of range"
   - data : "2700"
     valid : 0
-    msg : "area2 upper out of range"
+    expected_msg : "/WARNING/"
+    # "area2 upper out of range"
 dynamic_spec :
   - data : ''
     valid : 1
@@ -57,68 +70,92 @@ dynamic_spec :
     valid : 1
   - data : 'dynamic dynamicname timeout'
     valid : 0
-    msg : "missing timeout <min>"
+    expected_msg : "/WARNING/"
+    # "missing timeout <min>"
   - data : 'dnamic dynamicname'
     valid : 0
-    msg : "typo <dynamic>"
+    expected_msg : "/WARNING/"
+    # "typo <dynamic>"
 action :
   - data : ''
+    # 'missing <action>'
     valid : 0
-    msg : 'missing <action>'
+    expected_msg : "/WARNING/"
   - data : 'permit'
     valid : 1
+    struct : "{ action : permit }"
   - data : 'deny'
     valid : 1
+    struct : "{ action : deny }"
   - data : 'drop'
+    # unknown action
     valid : 0
-    msg : 'unknown action'
+    expected_msg : "/WARNING/"
 ip_proto :
   - data : ''
+    # 'missing <protocol>'
     valid : 0
-    msg : 'missing <protocol>'
+    expected_msg : "/WARNING/"
   - data : 'ip'
     valid : 1
+    struct : "{ protocol: ip() }"
   - data : 'ahp'
     valid : 1
+    struct : "{ protocol: ahp(51) }"
   - data : '0'
+    # 'lower bound'
     valid : 1
+    struct : "{ protocol: (0) }"
   - data : '255'
+    # 'upper bound'
     valid : 1
-    msg : 'upper bound'
+    struct : "{ protocol: (255) }"
   - data : '256'
+    # 'out of range'
     valid : 0
-    # msg : 'out of range'
+    expected_msg : "/WARNING/"
     # todo : "not implemented: ip proto range check."
 ip_spec1 :
   - data : 'any'
     valid : 1
+    struct : "{ source: { ipv4_addr: 0.0.0.0, wildcard: 255.255.255.255 } }"
   - data : 'host 192.168.0.1'
     valid : 1
+    struct : "{ source: { ipv4_addr: 192.168.0.1, wildcard: 0.0.0.0 } }"
   - data : '192.168.0.0 0.0.0.128'
     valid : 1
+    struct : "{ source: { ipv4_addr: 192.168.0.0, wildcard: 0.0.0.128 } }"
   - data : '192.168.0.2'
     valid : 0
-    msg : 'missing <host>'
+    expected_msg : "/WARNING/"
+    # 'missing <host>'
   - data : '1921.68.0.2'
     valid : 0
-    msg : 'ip: out of range'
+    expected_msg : "/WARNING/"
+    # 'ip: out of range'
 ip_spec2 :
   - data : 'any'
     valid : 1
+    struct : "{ destination: { ipv4_addr: 0.0.0.0, wildcard: 255.255.255.255 } }"
   - data : 'host 10.1.0.1'
     valid : 1
+    struct : "{ destination: { ipv4_addr: 10.1.0.1, wildcard: 0.0.0.0 } }"
   - data : '10.1.0.0 0.0.128.255'
     valid : 1
+    struct : "{ destination: { ipv4_addr: 10.1.0.0, wildcard: 0.0.128.255 } }"
   - data : '10.1.0.2'
     valid : 0
-    msg : 'missing <host>'
+    expected_msg : "/WARNING/"
+    # 'missing <host>'
   - data : '10.1.0.256'
     valid : 0
-    msg : 'ip: out of range'
+    expected_msg : "/WARNING/"
+    # 'ip: out of range'
 icmp_proto :
   - data : ""
     valid : 0
-    msg : 'missing <icmp>'
+    expected_msg : "/WARNING/"
+    # 'missing <icmp>'
   - data : "icmp"
     valid : 1
 icmp_qualifier :
@@ -128,17 +165,21 @@ icmp_qualifier :
     valid : 1
   - data : '0'
     valid : 1
-    msg : "icmp type num only"
+    expected_msg : "/WARNING/"
+    # "icmp type num only"
   - data : '0 255'
     valid : 1
-    msg : "icmp type/code num"
+    expected_msg : "/WARNING/"
+    # "icmp type/code num"
   - data : "256 0"
     valid : 0
-    msg : "type num: out of range"
+    expected_msg : "/WARNING/"
+    # "type num: out of range"
     todo : "not implemented: icmp_qualifier type num check"
   - data : "0 256"
     valid : 0
-    msg : "code num: out of range"
+    expected_msg : "/WARNING/"
+    # code num: out of range
     todo : "not implemented: icmp_qualifier code num check"
 std_acl_log_spec :
   - data : ""

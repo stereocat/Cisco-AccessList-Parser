@@ -15,7 +15,7 @@ dynamic_spec :
   - data : 'dynamic dynamicname'
     valid : 1
   - data : 'dynamic dynamicname timeout 3'
-    valid : 1        
+    valid : 1
   - data : 'dynamic dynamicname timeout'
     valid : 0
     msg : "missing timeout <min>"

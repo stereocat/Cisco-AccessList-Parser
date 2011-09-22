@@ -160,11 +160,11 @@ ip_proto: AHP    { $_[1]."(51)" }
                 {
                     my %set = map {$_ => 1} qw( 1 6 17 ); 
                     if ( 0 <= $num && $num <= 255 && !exists( $set{$num} ) ) {
-                        return $num;
+                        return "($num)";
                     }
                     else {
                         warn "WARNING: Protocol:$num is of-of-range (0-255)";
-                        return $num;
+                        return "($num)";
                     }
                 }
         ;

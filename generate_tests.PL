@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use YAML;
 use Path::Class;
+use Data::Dumper;
 
 sub generate_case {
     my $field_data = shift;
@@ -24,20 +25,75 @@ sub generate_case {
         my $curr_data  = $field->{data};
         my $curr_valid = $field->{valid};
         my $curr_todo  = $field->{todo};
+        my $curr_expected_msg
+            = exists( $field->{expected_msg} )
+            ? $field->{expected_msg}
+            : undef;
+        my $curr_struct
+            = exists( $field->{struct} ) ? $field->{struct} : undef;
 
         foreach my $later_field (@$later_test_case) {
 
             my $later_data  = $later_field->{data};
             my $later_valid = $later_field->{valid};
             my $later_todo  = $later_field->{todo};
+            my $later_expected_msg
+                = exists( $later_field->{expected_msg} )
+                ? $later_field->{expected_msg}
+                : undef;
+            my $later_struct
+                = exists( $later_field->{struct} )
+                ? $later_field->{struct}
+                : undef;
 
             my $data = join( q{ }, $curr_data, $later_data );
             $data =~ s/\s+$//;
             my $valid = $curr_valid * $later_valid;
             my $todo = defined($curr_todo) ? $curr_todo : $later_todo;
 
-            push( @$result,
-                { data => $data, valid => $valid, todo => $todo } );
+            # expected message
+            my $expected_msg = [];
+            push @$expected_msg, $curr_expected_msg
+                if ( defined($curr_expected_msg) );
+            push @$expected_msg, @$later_expected_msg
+                if ( defined($later_expected_msg) );
+
+            # struct
+
+            # print "# valid: $valid, ";
+            # print "curr: $test_field / $curr_data, data: $data\n";
+            # print "# curr_struct: $curr_struct\n";
+            # print "# later_struct: ", Dumper $later_struct, "\n";
+            my $struct;
+            if ( defined($curr_struct) && $curr_struct =~ /##entry##/ ) {
+                my $later_struct_str
+                    = defined($later_struct)
+                    ? join( q{,}, @$later_struct )
+                    : q{};
+                my $curr_struct_str = $curr_struct;
+                $curr_struct_str =~ s/##entry##/$later_struct_str/g;
+                push @$struct, $curr_struct_str;
+                # print "## later: ", $later_struct_str, "\n";
+                # print "## curr :",  $curr_struct_str,  "\n";
+            }
+            else {
+                $struct = [];
+                push @$struct, $curr_struct
+                    if ( defined($curr_struct) );
+                push @$struct, @$later_struct
+                    if ( defined($later_struct) );
+            }
+
+            # test data construction
+            push(
+                @$result,
+                {   data         => $data,
+                    valid        => $valid,
+                    todo         => $todo,
+                    expected_msg => $expected_msg,
+                    struct       => $struct
+                }
+            );
         }
     }
     return $result;
@@ -59,11 +115,17 @@ sub generate_test_script {
         my $data  = $testcase->{'data'};
         my $todo  = defined( $testcase->{'todo'} ) ? $testcase->{'todo'} : "";
         my $valid = $testcase->{'valid'};
+        my $expected_msg = join( q{,}, @{ $testcase->{'expected_msg'} } );
+        my $struct = join( q{}, @{ $testcase->{'struct'} } );
+        print Dumper $struct;
+
         my $record = <<"EOL";
 ===
 --- data: $data
 --- todo: $todo
 --- valid: $valid
+--- struct: $struct
+--- expected_msg: [$expected_msg]
 EOL
         print $tsfh $record;
     }
@@ -76,7 +138,8 @@ EOL
 # read __DATA__ token; test running program
 my $test_runner_code = do { local $/; <DATA> };
 
-foreach my $test_conf_file (<t/*.conf>) {
+# foreach my $test_conf_file (<t/*.conf>) {
+foreach my $test_conf_file (<t/stdacl.conf>) {
     my $test_conf_list = YAML::LoadFile($test_conf_file)
         or die "Cannot Load Test Conf File: $test_conf_file";
     print "# Load Test Conf File: $test_conf_file\n";
@@ -121,6 +184,7 @@ use strict;
 use warnings;
 use Test::Base;
 use Test::Warn;
+use YAML;
 use Cisco::AccessList::Parser;
 
 my $p = Cisco::AccessList::Parser->new();
