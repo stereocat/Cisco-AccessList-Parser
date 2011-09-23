@@ -13,11 +13,11 @@ stdacl_num :
   - data : "1"
     # "area1 lower-bound"
     valid : 1
-    struct : "{ 1: { entries: [ ##entry## ], type: numbered_standard } }"
+    struct : "{ 1: { entries: [ { ##entry## } ], type: numbered_standard } }"
   - data : "99"
     # "area1 upper-bound"
     valid : 1
-    struct : "{ 99: { entries: [ ##entry## ], type: numbered_standard } }"
+    struct : "{ 99: { entries: [ { ##entry## } ], type: numbered_standard } }"
   - data : "1299"
     # "area2 lower out of range"
     valid : 0
@@ -25,11 +25,11 @@ stdacl_num :
   - data : "1300"
     # "area2 lower-bound"
     valid : 1
-    struct : "{ 1300: { entries: [ ##entry## ], type: numbered_standard } }"
+    struct : "{ 1300: { entries: [ { ##entry## } ], type: numbered_standard } }"
   - data : "1999"
     # "area2 upper-bound"
     valid : 1
-    struct : "{ 1999: { entries: [ ##entry## ], type: numbered_standard } }"
+    struct : "{ 1999: { entries: [ { ##entry## } ], type: numbered_standard } }"
 extacl_num :
   - data : "100"
     valid : 1
@@ -83,10 +83,10 @@ action :
     expected_msg : "/WARNING/"
   - data : 'permit'
     valid : 1
-    struct : "{ action : permit }"
+    struct : "action : permit"
   - data : 'deny'
     valid : 1
-    struct : "{ action : deny }"
+    struct : "action : deny"
   - data : 'drop'
     # unknown action
     valid : 0
@@ -118,13 +118,13 @@ ip_proto :
 ip_spec1 :
   - data : 'any'
     valid : 1
-    struct : "{ source: { ipv4_addr: 0.0.0.0, wildcard: 255.255.255.255 } }"
+    struct : "source: { ipv4_addr: 0.0.0.0, wildcard: 255.255.255.255 }"
   - data : 'host 192.168.0.1'
     valid : 1
-    struct : "{ source: { ipv4_addr: 192.168.0.1, wildcard: 0.0.0.0 } }"
+    struct : "source: { ipv4_addr: 192.168.0.1, wildcard: 0.0.0.0 }"
   - data : '192.168.0.0 0.0.0.128'
     valid : 1
-    struct : "{ source: { ipv4_addr: 192.168.0.0, wildcard: 0.0.0.128 } }"
+    struct : "source: { ipv4_addr: 192.168.0.0, wildcard: 0.0.0.128 }"
   - data : '192.168.0.2'
     valid : 0
     expected_msg : "/WARNING/"
@@ -136,13 +136,13 @@ ip_spec1 :
 ip_spec2 :
   - data : 'any'
     valid : 1
-    struct : "{ destination: { ipv4_addr: 0.0.0.0, wildcard: 255.255.255.255 } }"
+    struct : "destination: { ipv4_addr: 0.0.0.0, wildcard: 255.255.255.255 }"
   - data : 'host 10.1.0.1'
     valid : 1
-    struct : "{ destination: { ipv4_addr: 10.1.0.1, wildcard: 0.0.0.0 } }"
+    struct : "destination: { ipv4_addr: 10.1.0.1, wildcard: 0.0.0.0 }"
   - data : '10.1.0.0 0.0.128.255'
     valid : 1
-    struct : "{ destination: { ipv4_addr: 10.1.0.0, wildcard: 0.0.128.255 } }"
+    struct : "destination: { ipv4_addr: 10.1.0.0, wildcard: 0.0.128.255 }"
   - data : '10.1.0.2'
     valid : 0
     expected_msg : "/WARNING/"

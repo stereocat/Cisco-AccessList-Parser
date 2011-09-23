@@ -33,7 +33,7 @@ my $builder = Module::Build->new(
         'version'      => 0,
     },
     build_requires => {
-        'YAML'       => 0,
+        'YAML::XS'   => 0.35,
         # 'Test::Most' => 0,
         'Test::More' => 0,
         'Test::Base' => 0.60,

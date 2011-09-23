@@ -117,7 +117,7 @@ sub generate_test_script {
         my $valid = $testcase->{'valid'};
         my $expected_msg = join( q{,}, @{ $testcase->{'expected_msg'} } );
         my $struct = join( q{}, @{ $testcase->{'struct'} } );
-        print Dumper $struct;
+        # print Dumper $struct;
 
         my $record = <<"EOL";
 ===
@@ -184,7 +184,8 @@ use strict;
 use warnings;
 use Test::Base;
 use Test::Warn;
-use YAML;
+use YAML::XS;
+use Data::Dumper;
 use Cisco::AccessList::Parser;
 
 my $p = Cisco::AccessList::Parser->new();
@@ -198,16 +199,40 @@ sub check_acl {
     my $data  = $block->data();
     my $valid = $block->valid();
     my $todo  = $block->todo();
+
+
     my ($acl, $objgrp);
 
     if($valid > 0) {
+        my $str_hashref = YAML::XS::Load( $block->struct() );
+
         ( $acl, $objgrp ) = $p->parse( 'input' => $data );
-        is( keys(%$acl) + keys(%$objgrp), $valid, $data );
+        #is( keys(%$acl) + keys(%$objgrp), $valid, $data );
+
+        my $got;
+        if ( defined($acl) ) {
+            $got = $acl;
+        }
+        else {
+            $got = $objgrp;
+        }
+
+        is_deeply( $got, $str_hashref, $data );
+        # print "## str: ", $block->struct(), "\n";
+        # print "## str: ", Dumper $str_hashref, "\n";
+        # print "## str-p: ", Dumper $acl, "\n";
     }
     else {
+        # print "## msg: ", $block->expected_msg(), "\n";
+        my $msg_hashref = YAML::XS::Load( $block->expected_msg() );
+
+        # If multiple error messages was generated,
+        # this test only certify a messages at first of them.
+        my $exist_err = shift @$msg_hashref;
+
         warnings_exist {
             ( $acl, $objgrp ) = $p->parse( 'input' => $data );
-        } qr/WARNING:/, $data;
+        } $exist_err, $data;
     }
 }
 
