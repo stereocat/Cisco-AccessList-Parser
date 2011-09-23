@@ -12,12 +12,18 @@ sub generate_case {
     my $test_field = shift @$fieldseq;
 
     if ( !defined($test_field) ) {
-        return [ { data => "", valid => "1", todo => undef } ];
+        return [
+            {   data  => "",
+                valid => "1",
+                todo  => undef
+            }
+        ];
     }
     if ( !exists( $field_data->{$test_field} ) ) {
         die "Unknown field name: $test_field";
     }
 
+    # data by later fields was generated recursively.
     my $later_test_case = generate_case( $field_data, $fieldseq );
 
     my $result = [];
@@ -64,11 +70,11 @@ sub generate_case {
             # print "curr: $test_field / $curr_data, data: $data\n";
             # print "# curr_struct: $curr_struct\n";
             # print "# later_struct: ", Dumper $later_struct, "\n";
-            my $struct;
+            my $struct = [];
             if ( defined($curr_struct) && $curr_struct =~ /##entry##/ ) {
                 my $later_struct_str
                     = defined($later_struct)
-                    ? join( q{,}, @$later_struct )
+                    ? join( q{, }, @$later_struct )
                     : q{};
                 my $curr_struct_str = $curr_struct;
                 $curr_struct_str =~ s/##entry##/$later_struct_str/g;
@@ -76,8 +82,26 @@ sub generate_case {
                 # print "## later: ", $later_struct_str, "\n";
                 # print "## curr :",  $curr_struct_str,  "\n";
             }
+            elsif ( defined($curr_struct) && $curr_struct =~ /##right##/ ) {
+                my $curr_struct_str = $curr_struct;
+                my $right_str = q{};
+
+                # print "## later_struct: ", Dumper $later_struct;
+                $right_str = shift @$later_struct
+                    if(defined($later_struct) && @$later_struct > 0);
+                $curr_struct_str =~ s/##right##/$right_str/g;
+
+                # print "## curr :", $curr_struct_str, "\n";
+                # print "## right:", $right_str, "\n";
+                push @$struct, $curr_struct_str;
+                push @$struct, @$later_struct
+                    if ( defined($later_struct) );
+
+                ## the data will used for pattern generation
+                ## by other current fields. DO NOT delete.
+                unshift @$later_struct, $right_str;
+            }
             else {
-                $struct = [];
                 push @$struct, $curr_struct
                     if ( defined($curr_struct) );
                 push @$struct, @$later_struct
@@ -96,6 +120,7 @@ sub generate_case {
             );
         }
     }
+
     return $result;
 }
 ############################################################
@@ -116,7 +141,7 @@ sub generate_test_script {
         my $todo  = defined( $testcase->{'todo'} ) ? $testcase->{'todo'} : "";
         my $valid = $testcase->{'valid'};
         my $expected_msg = join( q{,}, @{ $testcase->{'expected_msg'} } );
-        my $struct = join( q{}, @{ $testcase->{'struct'} } );
+        my $struct = $valid>0 ? join( q{}, @{ $testcase->{'struct'} } ) : "";
         # print Dumper $struct;
 
         my $record = <<"EOL";
@@ -138,8 +163,7 @@ EOL
 # read __DATA__ token; test running program
 my $test_runner_code = do { local $/; <DATA> };
 
-# foreach my $test_conf_file (<t/*.conf>) {
-foreach my $test_conf_file (<t/stdacl.conf>) {
+foreach my $test_conf_file (<t/*.conf>) {
     my $test_conf_list = YAML::LoadFile($test_conf_file)
         or die "Cannot Load Test Conf File: $test_conf_file";
     print "# Load Test Conf File: $test_conf_file\n";
@@ -175,7 +199,25 @@ foreach my $test_conf_file (<t/stdacl.conf>) {
             $test_case->{testname}, $generated_test_case
         );
     }
+
 }
+
+############################################################
+#
+# This program generate test-case recursively.
+#
+# Fieldseq: A  B  C
+#           A1 B1 C1
+#           A2 B2
+#
+# 1st: C-[]
+#   => [C]
+# 2nd: B1-[C], B2-[C]
+#   => [B1-C, B2-C]
+# 3rd: A1-[B1-C, B2-C], A2-[B1-C, B2-C]
+#   => [A1-B1-C, A1-B2-C, A2-B1-C, A2-B2-C]
+#
+############################################################
 
 __DATA__
 #!/usr/bin/perl
@@ -232,7 +274,9 @@ sub check_acl {
 
         warnings_exist {
             ( $acl, $objgrp ) = $p->parse( 'input' => $data );
-        } $exist_err, $data;
+        } [$exist_err], $data;
+
+
     }
 }
 

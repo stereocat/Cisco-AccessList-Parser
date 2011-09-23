@@ -267,11 +267,12 @@ object-group service Web_Service
  group-object other-list
 EOACL
 
-my $test_data = $input2;
+my $test_data = $objgrp1;
 my $aclparser = Cisco::AccessList::Parser->new();
 my $debug     = 0x1F;
 my ( $acl, $objgrp )
     = $aclparser->parse( 'input' => $test_data, 'debug' => $debug );
+print Dumper $acl, $objgrp;
 print "RESULT: ", ( keys(%$acl) + keys(%$objgrp) ), "\n";
 print "==================\n";
 $aclparser->lex_check( 'input' => $test_data );

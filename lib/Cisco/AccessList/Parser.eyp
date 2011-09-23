@@ -90,7 +90,12 @@ std_acl_log_spec:
 
 ext_acl: dynamic_spec ext_acl_body other_qualifier_list
                 {
-                    merge( { "dynamic" => $_[1] }, $_[2] );
+                    if( defined($_[1]) ) {
+                        return merge( { "dynamic" => $_[1] }, $_[2] );
+                    }
+                    else {
+                        return $_[2]
+                    }
                 }
         | REMARK
                 {
@@ -108,21 +113,43 @@ ext_acl_body: action ip_proto ip_spec ip_spec
                 }
         | action icmp_proto ip_spec ip_spec icmp_qualifier
                 {
-                    {   "action"         => $_[1],
-                        "protocol"       => $_[2],
-                        "source"         => $_[3],
-                        "destination"    => $_[4],
-                        "icmp_qualifier" => $_[5],
-                    };
+                    if(defined($_[5])) {
+                        return
+                        {   "action"         => $_[1],
+                            "protocol"       => $_[2],
+                            "source"         => $_[3],
+                            "destination"    => $_[4],
+                            "icmp_qualifier" => $_[5],
+                        };
+                    }
+                    else {
+                        return
+                        {   "action"         => $_[1],
+                            "protocol"       => $_[2],
+                            "source"         => $_[3],
+                            "destination"    => $_[4],
+                        };
+                    }
                 }
         | action tcp_proto tcp_srcdst_spec tcp_srcdst_spec tcp_flags_list
                 {
-                    {   "action"      => $_[1],
-                        "protocol"    => $_[2],
-                        "source"      => $_[3],
-                        "destination" => $_[4],
-                        "tcp_flags"   => $_[5],
-                    };
+                    if(defined($_[5])) {
+                        return
+                        {   "action"      => $_[1],
+                            "protocol"    => $_[2],
+                            "source"      => $_[3],
+                            "destination" => $_[4],
+                            "tcp_flags"   => $_[5],
+                        };
+                    }
+                    else {
+                        return
+                        {   "action"      => $_[1],
+                            "protocol"    => $_[2],
+                            "source"      => $_[3],
+                            "destination" => $_[4],
+                        };
+                    }
                 }
         | action udp_proto udp_srcdst_spec udp_srcdst_spec
                 {
@@ -163,7 +190,7 @@ ip_proto: AHP    { $_[1]."(51)" }
                         return "($num)";
                     }
                     else {
-                        warn "WARNING: Protocol:$num is of-of-range (0-255)";
+                        warn "WARNING: Protocol:$num is out-of-range (0-255)";
                         return "($num)";
                     }
                 }
@@ -390,8 +417,13 @@ objgrp_service_entry: DESCRIPTION
                 }
         | icmp_proto icmp_qualifier
                 {
-                    { "protocol" => $_[1],
-                      "icmp_qualifier" => $_[2] };
+                    if(defined($_[2])) {
+                        return { "protocol" => $_[1],
+                                 "icmp_qualifier" => $_[2] };
+                    }
+                    else {
+                        return { "protocol" => $_[1] }
+                    }
                 }
         | tcp_proto objgrp_tcp_proto
                 {
@@ -421,9 +453,6 @@ objgrp_tcp_proto: objgrp_tcp_proto_spec
                 }
         ;
 objgrp_tcp_proto_spec:
-                {
-                    { "port" => "eq any" };
-                }
         | unary_operator tcp_port_qualifier
                 {
                     { "port" => join( q{ }, $_[1], $_[2] ) };
@@ -448,9 +477,6 @@ objgrp_udp_proto: objgrp_udp_proto_spec
                 }
         ;
 objgrp_udp_proto_spec:
-                {
-                    { "port" => "eq any" };
-                }
         | unary_operator udp_port_qualifier
                 {
                     { "port" => join( q{ }, $_[1], $_[2] ) };
@@ -475,9 +501,6 @@ objgrp_tcpudp_proto: objgrp_tcpudp_proto_spec
                 }
         ;
 objgrp_tcpudp_proto_spec:
-                {
-                    { "port" => "eq any" };
-                }
         | unary_operator tcpudp_port_qualifier
                 {
                     { "port" => join( q{ }, $_[1], $_[2] ) };
@@ -562,9 +585,6 @@ icmp_numcode:
 # tcp/udp port spec
 
 tcp_port_spec:
-                {
-                    { "port" => "eq any" };
-                }
         | unary_operator tcp_port_qualifier
                 {
                     { "port" => join( q{ }, $_[1], $_[2] ) };
@@ -576,9 +596,6 @@ tcp_port_spec:
         ;
 
 udp_port_spec:
-                {
-                    { "port" => "eq any" };
-                }
         | unary_operator udp_port_qualifier
                 {
                     { "port" => join( q{ }, $_[1], $_[2] ) };

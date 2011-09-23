@@ -5,10 +5,12 @@ stdacl_num :
   - data : "1"
     valid : 1
     msg : "area1 lower-bound"
+    struct : "{ 1: { entries: [ { ##entry## } ], type: numbered_standard } }"
 extacl_num :
   - data : "100"
     valid : 1
     msg : "area1 lower-bound"
+    struct : "{ 100: { entries: [ { ##entry## } ], type: numbered_extended } }"
 dynamic_spec :
   - data : ''
     valid : 1
@@ -25,121 +27,174 @@ dynamic_spec :
 action :
   - data : 'permit'
     valid : 1
+    struct : "action : permit"
   - data : 'deny'
     valid : 1
+    struct : "action : deny"
 tcp_proto :
   - data : 'tcp'
     valid : 1
+    struct : "protocol: tcp(6)"
 udp_proto :
   - data : 'udp'
     valid : 1
+    struct : "protocol: udp(17)"
 tcpudp_proto :
   - data : 'tcp'
     valid : 1
+    struct : "protocol: tcp(6)"
   - data : 'udp'
     valid : 1
+    struct : "protocol: udp(17)"
   - data : 'object-group svgrp'
     valid : 1
+    struct : "protocol: { object_group_service: svgrp }"
 ip_spec1 :
   - data : 'any'
     valid : 1
+    struct : "source: { ipv4_addr: 0.0.0.0, wildcard: 255.255.255.255, ##right## }"
   - data : 'host 192.168.0.1'
     valid : 1
+    struct : "source: { ipv4_addr: 192.168.0.1, wildcard: 0.0.0.0, ##right## }"
   - data : '192.168.0.0 0.0.0.128'
     valid : 1
+    struct : "source: { ipv4_addr: 192.168.0.0, wildcard: 0.0.0.128, ##right## }"
   - data : '192.168.0.2'
     valid : 0
+    expected_msg : "/WARNING/"
     msg : 'missing <host>'
   - data : '1921.68.0.2'
     valid : 0
+    expected_msg : "/WARNING/"
     msg : 'ip: out of range'
 ip_spec2 :
   - data : 'any'
     valid : 1
+    struct : "destination: { ipv4_addr: 0.0.0.0, wildcard: 255.255.255.255, ##right## }"
   - data : 'host 10.1.0.1'
     valid : 1
+    struct : "destination: { ipv4_addr: 10.1.0.1, wildcard: 0.0.0.0, ##right## }"
   - data : '10.1.0.0 0.0.128.255'
     valid : 1
+    struct : "destination: { ipv4_addr: 10.1.0.0, wildcard: 0.0.128.255, ##right## }"
   - data : '10.1.0.2'
     valid : 0
+    expected_msg : "/WARNING/"
     msg : 'missing <host>'
   - data : '10.1.0.256'
     valid : 0
+    expected_msg : "/WARNING/"
     msg : 'ip: out of range'
 ip_spec_objgrp1 :
   - data : 'any'
     valid : 1
+    struct : "source: { ipv4_addr: 0.0.0.0, wildcard: 255.255.255.255, ##right## }"
   - data : 'host 192.168.0.1'
     valid : 1
+    struct : "source: { ipv4_addr: 192.168.0.1, wildcard: 0.0.0.0, ##right## }"
   - data : '192.168.0.0 0.0.0.128'
     valid : 1
+    struct : "source: { ipv4_addr: 192.168.0.0, wildcard: 0.0.0.128, ##right## }"
   - data : 'object-group nwgrp1'
     valid : 1
+    struct : "source: { object_group_network: nwgrp1, ##right## }"
 ip_spec_objgrp2 :
   - data : 'any'
     valid : 1
+    struct : "destination: { ipv4_addr: 0.0.0.0, wildcard: 255.255.255.255, ##right## }"
   - data : 'host 10.1.0.1'
     valid : 1
+    struct : "destination: { ipv4_addr: 10.1.0.1, wildcard: 0.0.0.0, ##right## }"
   - data : '10.1.0.0 0.0.128.255'
     valid : 1
+    struct : "destination: { ipv4_addr: 10.1.0.0, wildcard: 0.0.128.255, ##right## }"
   - data : 'object-group nwgrp2'
     valid : 1
+    struct : "destination: { object_group_network: nwgrp2, ##right## }"
+null_port :
+  - data : ""
+    valid : 1
+    struct : " "
 tcp_port_spec1 :
   - data : ""
     valid : 1
+    struct : " "
   - data : "eq 80"
     valid : 1
+    struct : "port: eq 80"
   - data : "eq any"
     valid : 0
     msg : "unknown port-prot-name"
+    expected_msg: "/WARNING/"
   - data : "lt ftp"
     valid : 1
+    struct : " port: lt ftp"
   - data : "gt telnet"
     valid : 1
+    struct : "port: gt telnet"
   - data : "range 53 443"
     valid : 1
+    struct : "port: range 53 443"
 tcp_port_spec2 :
   - data : ""
     valid : 1
+    struct : " "
   - data : "eq www"
     valid : 1
+    struct : "port: eq www"
   - data : "lt domain"
     valid : 1
+    struct : "port: lt domain"
   - data : "gt 4000"
     valid : 1
+    struct : "port: gt 4000"
   - data : "range 2000 3333"
     valid : 1
+    struct : "port: range 2000 3333"
   - data : "eq isakmp"
     valid : 0
     msg : "udp port-proto-name"
+    expected_msg: "/WARNING/"
 udp_port_spec1 :
   - data : ""
     valid : 1
+    struct : " "
   - data : "eq 80"
     valid : 1
+    struct : "port: eq 80"
   - data : "eq any"
     valid : 0
     msg : "unknown port-prot-name"
+    expected_msg: "/WARNING/"
   - data : "lt isakmp"
     valid : 1
+    struct : "port: lt isakmp"
   - data : "gt ntp"
     valid : 1
+    struct : "port: gt ntp"
   - data : "range 53 443"
     valid : 1
+    struct : "port: range 53 443"
 udp_port_spec2 :
   - data : ""
     valid : 1
+    struct : " "
   - data : "eq 500"
     valid : 1
+    struct : "port: eq 500"
   - data : "lt domain"
     valid : 1
+    struct : "port: lt domain"
   - data : "gt 4000"
     valid : 1
+    struct : "port: gt 4000"
   - data : "range 2000 3333"
     valid : 1
+    struct : "port: range 2000 3333"
   - data : "eq pop3"
     valid : 0
     msg : "tcp port-proto-name"
+    expected_msg: "/WARNING/"
 ext_acl_log_spec :
   - data : ""
     valid : 1
@@ -160,6 +215,7 @@ tcp_flags :
     valid : 1
   - data : 'acck established'
     valid : 0
+    expected_msg: "/WARNING/"
 precedence :
   - data : ''
     valid : 1

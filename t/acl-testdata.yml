@@ -2,83 +2,86 @@ acl :
   - data : 'access-list'
     valid : 1
   - data : 'access-lsit'
-    # "typo <access-list>"
+    msg : "typo <access-list>"
     valid : 0
     expected_msg : "/WARNING/"
 stdacl_num :
   - data : "0"
-    # "area1 lower out of range"
+    msg : "area1 lower out of range"
     valid : 0
     expected_msg : "/WARNING/"
   - data : "1"
-    # "area1 lower-bound"
+    msg : "area1 lower-bound"
     valid : 1
     struct : "{ 1: { entries: [ { ##entry## } ], type: numbered_standard } }"
   - data : "99"
-    # "area1 upper-bound"
+    msg : "area1 upper-bound"
     valid : 1
     struct : "{ 99: { entries: [ { ##entry## } ], type: numbered_standard } }"
   - data : "1299"
-    # "area2 lower out of range"
+    msg : "area2 lower out of range"
     valid : 0
     expected_msg : "/WARNING/"
   - data : "1300"
-    # "area2 lower-bound"
+    msg : "area2 lower-bound"
     valid : 1
     struct : "{ 1300: { entries: [ { ##entry## } ], type: numbered_standard } }"
   - data : "1999"
-    # "area2 upper-bound"
+    msg : "area2 upper-bound"
     valid : 1
     struct : "{ 1999: { entries: [ { ##entry## } ], type: numbered_standard } }"
 extacl_num :
   - data : "100"
     valid : 1
-    expected_msg : "/WARNING/"
-    # "area1 lower-bound"
+    struct : "{ 100: { entries: [ { ##entry## } ], type: numbered_extended } }"
+    msg : "area1 lower-bound"
   - data : "199"
     valid : 1
-    expected_msg : "/WARNING/"
-    # "area1 upper-bound"
+    struct : "{ 199: { entries: [ { ##entry## } ], type: numbered_extended } }"
+    msg : "area1 upper-bound"
   # - data : "99"
   #   valid : 0
   #   expected_msg : "area1 lower out of range"
   - data : "200"
     valid : 0
     expected_msg : "/WARNING/"
-    # "area1 upper out of range"
+    msg : "area1 upper out of range"
   - data : "2000"
     valid : 1
-    expected_msg : "/WARNING/"
-    # "area2 lower-bound"
+    struct : "{ 2000: { entries: [ { ##entry## } ], type: numbered_extended } }"
+    msg : "area2 lower-bound"
   - data : "2699"
     valid : 1
-    expected_msg : "/WARNING/"
-    # "area2 upper-bound"
+    struct : "{ 2699: { entries: [ { ##entry## } ], type: numbered_extended } }"
+    msg : "area2 upper-bound"
   # - data : "1999"
   #   valid : 0
   #   expected_msg : "area2 lower out of range"
   - data : "2700"
     valid : 0
     expected_msg : "/WARNING/"
-    # "area2 upper out of range"
+    msg : "area2 upper out of range"
 dynamic_spec :
   - data : ''
     valid : 1
+    struct : "dynamic: "
   - data : 'dynamic dynamicname'
     valid : 1
+    struct : "dynamic: "
   - data : 'dynamic dynamicname timeout 3'
     valid : 1
+    struct : "dynamic: "
   - data : 'dynamic dynamicname timeout'
     valid : 0
     expected_msg : "/WARNING/"
-    # "missing timeout <min>"
+    msg : "missing timeout <min>"
   - data : 'dnamic dynamicname'
     valid : 0
     expected_msg : "/WARNING/"
-    # "typo <dynamic>"
+    msg : "typo <dynamic>"
 action :
   - data : ''
-    # 'missing <action>'
+    msg : 'missing <action>'
     valid : 0
     expected_msg : "/WARNING/"
   - data : 'permit'
@@ -88,32 +91,32 @@ action :
     valid : 1
     struct : "action : deny"
   - data : 'drop'
-    # unknown action
+    msg : "unknown action or typo"
     valid : 0
     expected_msg : "/WARNING/"
 ip_proto :
   - data : ''
-    # 'missing <protocol>'
+    msg : 'missing <protocol>'
     valid : 0
     expected_msg : "/WARNING/"
   - data : 'ip'
     valid : 1
-    struct : "{ protocol: ip() }"
+    struct : "protocol: ip()"
   - data : 'ahp'
     valid : 1
-    struct : "{ protocol: ahp(51) }"
+    struct : "protocol: ahp(51)"
   - data : '0'
-    # 'lower bound'
+    msg : 'lower bound'
     valid : 1
-    struct : "{ protocol: (0) }"
+    struct : "protocol: (0)"
   - data : '255'
-    # 'upper bound'
+    msg : 'upper bound'
     valid : 1
-    struct : "{ protocol: (255) }"
+    struct : "protocol: (255)"
   - data : '256'
-    # 'out of range'
+    msg : 'out of range'
     valid : 0
-    expected_msg : "/WARNING/"
+    expected_msg : "/WARNING: Protocol/"
     # todo : "not implemented: ip proto range check."
 ip_spec1 :
   - data : 'any'
@@ -128,11 +131,11 @@ ip_spec1 :
   - data : '192.168.0.2'
     valid : 0
     expected_msg : "/WARNING/"
-    # 'missing <host>'
+    msg : 'missing <host>'
   - data : '1921.68.0.2'
     valid : 0
     expected_msg : "/WARNING/"
-    # 'ip: out of range'
+    msg : 'ip: out of range'
 ip_spec2 :
   - data : 'any'
     valid : 1
@@ -146,41 +149,44 @@ ip_spec2 :
   - data : '10.1.0.2'
     valid : 0
     expected_msg : "/WARNING/"
-    # 'missing <host>'
+    msg : 'missing <host>'
   - data : '10.1.0.256'
     valid : 0
     expected_msg : "/WARNING/"
-    # 'ip: out of range'
+    msg : 'ip: out of range'
 icmp_proto :
   - data : ""
     valid : 0
     expected_msg : "/WARNING/"
-    # 'missing <icmp>'
+    msg : 'missing <icmp>'
   - data : "icmp"
     valid : 1
+    struct : "protocol: icmp(1)"
 icmp_qualifier :
   - data : ""
     valid : 1
   - data : 'administratively-prohibited'
     valid : 1
+    struct : "icmp_qualifier: administratively-prohibited"
   - data : '0'
     valid : 1
-    expected_msg : "/WARNING/"
-    # "icmp type num only"
+    struct : "icmp_qualifier: 0"
+    msg : "icmp type num only"
   - data : '0 255'
     valid : 1
-    expected_msg : "/WARNING/"
-    # "icmp type/code num"
-  - data : "256 0"
-    valid : 0
-    expected_msg : "/WARNING/"
-    # "type num: out of range"
-    todo : "not implemented: icmp_qualifier type num check"
-  - data : "0 256"
-    valid : 0
-    expected_msg : "/WARNING/"
-    # code num: out of range
-    todo : "not implemented: icmp_qualifier code num check"
+    struct : "icmp_qualifier: 0 255"
+    todo : "not implemented, icmp_qualifier code/num check"
+    msg : "icmp type/code num"
+  # - data : "256 0"
+  #   valid : 0
+  #   expected_msg : "/WARNING/"
+  #   # "type num: out of range"
+  #   todo : "not implemented: icmp_qualifier type num check"
+  # - data : "0 256"
+  #   valid : 0
+  #   expected_msg : "/WARNING/"
+  #   # code num: out of range
+  #   todo : "not implemented: icmp_qualifier code num check"
 std_acl_log_spec :
   - data : ""
     valid : 1

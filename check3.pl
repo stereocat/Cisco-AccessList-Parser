@@ -12,10 +12,10 @@ use Cisco::AccessList::Parser;
 
 #sub TERMINAL::info { $_[0]{attr} }
 
-plan tests => 2;
+plan tests => 1;
 
 my $input = << "EOACL";
-access-list 100 permit 256 192.168.0.0 0.0.0.128 any
+access-list 100 permit tcp any  any eq isakmp
 EOACL
 
 my $aclparser = Cisco::AccessList::Parser->new();
@@ -24,13 +24,9 @@ my $data = $input;
 my $debug     = 0;
 
 my ( $acl, $objgrp );
-warning_like {
-    ( $acl, $objgrp ) = $aclparser->parse( 'input' => $data );
-} [qr/WARNING: Protocol/, qr/WARNING: Syntax error/], $data;
-
 warnings_exist {
     ( $acl, $objgrp ) = $aclparser->parse( 'input' => $data );
-} qr/WARNING: Protocol/, $data;
+} ["/WARNING/"], $data;
 
 # print "RESULT: ", ( keys(%$acl) + keys(%$objgrp) ), "\n";
 # print "==================\n";
