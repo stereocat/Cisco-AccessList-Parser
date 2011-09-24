@@ -1,6 +1,6 @@
 =head1 NAME
 
-Cisco::AccessList::Parser - [One line description of module's purpose here]
+Cisco::AccessList::Parser - Cisco IOS Access List Parser
 
 
 =head1 VERSION
@@ -10,22 +10,58 @@ This document describes Cisco::AccessList::Parser version 0.0.1
 
 =head1 SYNOPSIS
 
-    use Cisco::AccessList::Parser;
-
 =for author to fill in:
     Brief code example(s) here showing commonest usage(s).
     This section will be as far as many users bother reading
     so make it as educational and exeplary as possible.
+
+  use Cisco::AccessList::Parser;
+  use Data::Dumper;
   
+  # load access-list
+  my $acl = <<'__ACL__';
+  object-group network Group2
+   192.168.1.0 /24
+   host 172.16.2.3
+   range 192.168.3.2 192.168.3.200
+  !
+  ip access-list extended FA0-OUT
+   deny   ip any 10.0.0.0 0.255.255.255 log
+   permit icmp any any
+   permit tcp any object-group Group2
+   permit ip any any reflect iptraffic timeout 300
+   deny   ip any any log
+  !
+  __ACL__
   
+  my $p = Cisco::AccessList::Parser->new();
+  my ($acl_ref, $objgrp_ref) = $p->parse( 'input' => $data );
+  print Dumper $acl_ref, $objgrp_ref;
+
 =head1 DESCRIPTION
 
 =for author to fill in:
     Write a full description of the module and its features here.
     Use subsections (=head2, =head3) as appropriate.
 
+Cisco::AccessList::Parser can parse Cisco IOS access-list (ACL) and
+object-group. Describes more Detail, it can parse below ACLs.
 
-=head1 INTERFACE 
+=over
+
+=item * Numbered standard ACL
+
+=item * Numbered extended ACL
+
+=item * Named standard ACL
+
+=item * Named extended ACL
+
+=item * Object groups for ACLs (service and network object-group)
+
+=back
+
+=head1 INTERFACE
 
 =for author to fill in:
     Write a separate section listing the public components of the modules
@@ -33,6 +69,36 @@ This document describes Cisco::AccessList::Parser version 0.0.1
     exported, or methods that may be called on objects belonging to the
     classes provided by the module.
 
+=head2 new
+
+This is the constructor.
+
+  my $p = Cisco::AccessList::Parser->new();
+
+=head2 parse
+
+This is ACL Parser. It accepts several attributes, and return parsed
+ACL data.
+
+=over 2
+
+=item input
+
+ACL strings to parse. (Internally, specified with C<input> data is
+assigned to C<YYData->{INPUT}>.
+
+=item debug
+
+Debug flag of Parse::Eyapp.
+
+  $p->parse(input => $data, debug => 0x1F);
+
+=back
+
+=head2 lex_check
+
+This is Lexer checker routine for development. It takes same
+attributes of C<parse> method.
 
 =head1 DIAGNOSTICS
 
@@ -77,8 +143,15 @@ Cisco::AccessList::Parser requires no configuration files or environment variabl
     the module is part of the standard Perl distribution, part of the
     module's distribution, or must be installed separately. ]
 
-None.
+=over
 
+=item * L<Parse::Eyapp> is used to generate parser module.
+
+=item * L<Hash::Merge> is used to construct parsed data.
+
+=item * L<Regexp::Common> is used in Lexer to match IP address etc.
+
+=back
 
 =head1 INCOMPATIBILITIES
 
@@ -103,12 +176,24 @@ None reported.
     limitations on the size of data sets, special cases that are not
     (yet) handled, etc.
 
-No bugs have been reported.
+=head2 Bugs
 
-Please report any bugs or feature requests to
-C<bug-cisco-accesslist-parser@rt.cpan.org>, or through the web interface at
-L<http://rt.cpan.org>.
+Please report any bugs or feature requests to C<stereocat@gmail.com>.
 
+=head2 Limitations
+
+Cisco::AccessList::Parser cannot parse below features, and parser
+output data structure was not implemented for all options.
+
+=over
+
+=item * Ext-ACL tcp-flags option: C<match-any> and C<match-all> word
+
+=item * Ext-ACL tcp/udp port operator: port list of C<eq> and C<neq> operator
+
+=item * object-group for PBACL (Policy-Based ACL)
+
+=back
 
 =head1 AUTHOR
 

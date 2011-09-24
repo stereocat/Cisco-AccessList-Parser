@@ -19,3 +19,4 @@ t/acl-testdata2.yml
 t/extacl.conf
 t/stdacl.conf
 tool/eypgraph.pl
+META.yml

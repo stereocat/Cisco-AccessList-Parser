@@ -24,7 +24,7 @@ my $builder = Module::Build->new(
     license            => 'perl',
     dist_author        => 'stereocat <stereocat@gmail.com>',
     dist_version_from  => 'lib/Cisco/AccessList/Parser.eyp',
-    dist_abstract      => 'Cisco access-list parse',
+    dist_abstract      => 'Cisco IOS Access List Parser',
     configure_requires => { 'Module::Build' => 0.36, },
     requires           => {
         'Hash::Merge' => 0.12,
