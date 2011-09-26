@@ -85,7 +85,7 @@ ACL data.
 =item input
 
 ACL strings to parse. (Internally, specified with C<input> data is
-assigned to C<YYData->{INPUT}>.
+assigned to C<YYData-E<gt>{INPUT}>.)
 
 =item debug
 
