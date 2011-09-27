@@ -18,7 +18,8 @@ my $builder = Module::Build->new(
             't/25-extacl-objgrp2.t',
             't/26-extacl-objgrp3.t',
             't/27-extacl-options1.t',
-            't/28-extacl-options2.t'
+            't/28-extacl-options2.t',
+            't/29-extacl-tcpflag.t',
         ],
     },
     license            => 'perl',

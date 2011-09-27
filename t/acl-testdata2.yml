@@ -207,13 +207,41 @@ ext_acl_log_spec :
   - data : "log-input logcookie"
     valid : 1
 tcp_flags :
+# 'struct' data was only for testing
+# tcp_flags data construct logic was not implemented yet.
   - data : ''
     valid : 1
   - data : 'established'
     valid : 1
+    struct : "tcp_flags: established"
   - data: 'syn fin ack'
     valid : 1
+    struct : "tcp_flags: syn"
   - data : 'acck established'
+    valid : 0
+    expected_msg: "/WARNING/"
+tcp_flags2 :
+# 'struct' data was only for testing
+# tcp_flags data construct logic was not implemented yet.
+  - data : 'established'
+    valid : 1
+    struct : "tcp_flags: established"
+  - data : 'established match-all +fin'
+    valid : 0
+    expected_msg: "/WARNING/"
+  - data : 'match-all +syn -fin -urg'
+    valid : 1
+    struct : "tcp_flags: match-all"
+  - data : 'match-any -syn +fin +urg'
+    valid : 1
+    struct : "tcp_flags: match-any"
+  - data : 'fin match-all +urg'
+    valid : 0
+    expected_msg: "/WARNING/"
+  - data : 'match-any -syn match-all -fin -urg'
+    valid : 0
+    expected_msg: "/WARNING/"
+  - data : 'match-any syn +fin'
     valid : 0
     expected_msg: "/WARNING/"
 precedence :

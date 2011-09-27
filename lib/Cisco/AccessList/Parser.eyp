@@ -131,7 +131,7 @@ ext_acl_body: action ip_proto ip_spec ip_spec
                         };
                     }
                 }
-        | action tcp_proto tcp_srcdst_spec tcp_srcdst_spec tcp_flags_list
+        | action tcp_proto tcp_srcdst_spec tcp_srcdst_spec tcp_flags_qualifier
                 {
                     if(defined($_[5])) {
                         return
@@ -681,11 +681,18 @@ udp_port_qualifier: NUMBER        # port number (0-65535)
 
 # tcp flags list
 
-tcp_flags_list:
-        | tcp_flags_list tcp_flag
+tcp_flags_qualifier:
+        | tcp_flags_list
+        | MATCH_ALL pm_tcp_flags_list
+        | MATCH_ANY pm_tcp_flags_list
         ;
 
-tcp_flag: ack_flag
+tcp_flags_list: tcp_flags
+        | tcp_flags_list tcp_flags
+        ;
+
+tcp_flags: ESTABL
+        | ACK
         | SYN
         | FIN
         | PSH
@@ -693,10 +700,17 @@ tcp_flag: ack_flag
         | RST
         ;
 
-ack_flag: ESTABL
-        | ACK
+pm_tcp_flags_list: pm_tcp_flags
+        | pm_tcp_flags_list pm_tcp_flags
         ;
 
+pm_tcp_flags: PM_ACK
+        | PM_SYN
+        | PM_FIN
+        | PM_PSH
+        | PM_URG
+        | PM_RST
+        ;
 
 # oether qualifier list
 
@@ -902,13 +916,21 @@ sub _yylex {
         m/\G(host)\s+/gc and return ( 'HOST', $1 );
 
         # tcp_flag
-        m/\G(established)\s+/gc and return ( 'ESTABL', $1 );
-        m/\G(syn)\s+/gc         and return ( 'SYN',    $1 );
-        m/\G(ack)\s+/gc         and return ( 'ACK',    $1 );
-        m/\G(fin)\s+/gc         and return ( 'FIN',    $1 );
-        m/\G(psh)\s+/gc         and return ( 'PSH',    $1 );
-        m/\G(urg)\s+/gc         and return ( 'URG',    $1 );
-        m/\G(rst)\s+/gc         and return ( 'RST',    $1 );
+        m/\G(established)\s+/gc and return ( 'ESTABL',    $1 );
+        m/\G(syn)\s+/gc         and return ( 'SYN',       $1 );
+        m/\G(ack)\s+/gc         and return ( 'ACK',       $1 );
+        m/\G(fin)\s+/gc         and return ( 'FIN',       $1 );
+        m/\G(psh)\s+/gc         and return ( 'PSH',       $1 );
+        m/\G(urg)\s+/gc         and return ( 'URG',       $1 );
+        m/\G(rst)\s+/gc         and return ( 'RST',       $1 );
+        m/\G([\+\-]syn)\s+/gc   and return ( 'PM_SYN',    $1 );
+        m/\G([\+\-]ack)\s+/gc   and return ( 'PM_ACK',    $1 );
+        m/\G([\+\-]fin)\s+/gc   and return ( 'PM_FIN',    $1 );
+        m/\G([\+\-]psh)\s+/gc   and return ( 'PM_PSH',    $1 );
+        m/\G([\+\-]urg)\s+/gc   and return ( 'PM_URG',    $1 );
+        m/\G([\+\-]rst)\s+/gc   and return ( 'PM_RST',    $1 );
+        m/\G(match-all)\s+/gc   and return ( 'MATCH_ALL', $1 );
+        m/\G(match-any)\s+/gc   and return ( 'MATCH_ANY', $1 );
 
         # ip protocol number, tcp/udp port number Ç∆Ç©ÇÕÇ±ÇÃéûì_Ç≈
         # return (TOKEN, [$1, num]); ÇµÇƒî‘çÜÇ…ïœä∑ÇµÇƒÇµÇ‹Ç®Ç§Ç∆évÇ¡ÇΩ
